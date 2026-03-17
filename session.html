@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Plank Study — Session</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { brand: '#3b82f6' },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+
+    /* ---- Shared button styles ---- */
+    .btn-primary {
+      background: #3b82f6;
+      color: #fff;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-primary:active  { background: #1d4ed8; transform: scale(0.97); }
+    .btn-primary:disabled { background: #475569; cursor: not-allowed; transform: none; }
+    .btn-outline {
+      border: 2px solid #475569;
+      color: #cbd5e1;
+      background: transparent;
+      transition: border-color 0.15s;
+    }
+    .btn-outline:active { border-color: #3b82f6; }
+
+    /* ---- Step visibility ---- */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* ---- Plank screen — full dark, portrait-locked feel ---- */
+    #step-plank {
+      position: fixed;
+      inset: 0;
+      background: #020617;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    #step-plank.active { display: flex; }
+
+    #timer-display {
+      font-size: clamp(72px, 22vw, 160px);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+      color: #f0fdf4;
+      line-height: 1;
+      text-align: center;
+      font-family: ui-monospace, 'Courier New', monospace;
+      text-shadow: 0 0 40px rgba(74, 222, 128, 0.3);
+    }
+    #timer-label {
+      color: #4ade80;
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    #btn-plank-stop {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom) + 32px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #dc2626;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      border-radius: 20px;
+      padding: 20px 64px;
+      min-width: 280px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.1s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #btn-plank-stop:active {
+      background: #991b1b;
+      transform: translateX(-50%) scale(0.96);
+    }
+
+    /* ---- Recording indicator ---- */
+    #recording-indicator {
+      position: fixed;
+      top: calc(env(safe-area-inset-top) + 16px);
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #fca5a5;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+    .rec-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    /* ---- Scale question buttons ---- */
+    .scale-btn {
+      min-width: 40px;
+      height: 44px;
+      border-radius: 10px;
+      border: 2px solid #334155;
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s;
+      flex: 1;
+    }
+    .scale-btn.selected {
+      border-color: #3b82f6;
+      background: #1d4ed8;
+      color: #fff;
+    }
+    .scale-btn:active { transform: scale(0.94); }
+
+    /* ---- Radio option buttons ---- */
+    .radio-btn {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 2px solid #334155;
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .radio-btn.selected {
+      border-color: #3b82f6;
+      background: #1e3a5f;
+      color: #bfdbfe;
+    }
+    .radio-btn:active { transform: scale(0.98); }
+
+    .fade-in { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* ---- Progress bar ---- */
+    #progress-bar {
+      height: 4px;
+      background: #1e293b;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+    }
+    #progress-fill {
+      height: 100%;
+      background: #3b82f6;
+      transition: width 0.4s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 min-h-screen">
+
+  <!-- Progress bar -->
+  <div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
+
+  <!-- Scroll container -->
+  <div class="pt-6 pb-24 px-4 max-w-lg mx-auto">
+
+    <!-- Step: LOADING -->
+    <section id="step-loading" class="step active fade-in mt-20 text-center">
+      <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-slate-400 text-sm">Loading your session...</p>
+    </section>
+
+    <!-- Step: ERROR -->
+    <section id="step-error" class="step mt-10">
+      <div class="bg-red-900/30 border border-red-500/40 rounded-2xl p-6 text-center">
+        <p class="text-red-300 text-base font-semibold mb-2">Something went wrong</p>
+        <p id="error-message" class="text-red-200/80 text-sm mb-5"></p>
+        <a href="index.html" class="btn-primary inline-block rounded-xl px-6 py-3 text-sm font-semibold">
+          Back to Registration
+        </a>
+      </div>
+    </section>
+
+    <!-- Step 1: SAFETY CHECK -->
+    <section id="step-safety" class="step">
+      <div class="mb-6">
+        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 1 of 6</p>
+        <h2 class="text-white text-xl font-bold">Before You Begin</h2>
+        <p id="safety-session-label" class="text-slate-400 text-sm mt-1"></p>
+      </div>
+
+      <div class="bg-slate-800 rounded-2xl p-5 mb-4">
+        <p class="text-slate-300 text-sm font-medium mb-3">Confirm your identity</p>
+        <p class="text-slate-400 text-sm mb-1">Participating as:</p>
+        <p id="safety-email" class="text-white font-semibold text-sm bg-slate-700 rounded-xl px-4 py-3 mb-1"></p>
+        <p class="text-slate-500 text-xs">
+          Wrong email? <a href="index.html" class="text-blue-400 underline">Back to registration</a>
+        </p>
+      </div>
+
+      <div class="bg-slate-800 rounded-2xl p-5 mb-5">
+        <p class="text-slate-300 text-sm font-medium mb-3">Safety check</p>
+        <label class="flex items-start gap-3 mb-3 cursor-pointer">
+          <input type="checkbox" id="chk-no-injury" class="mt-0.5 w-4 h-4 accent-blue-500" />
+          <span class="text-slate-400 text-sm leading-relaxed">
+            I have not done intense core exercise in the last 24 hours.
+          </span>
+        </label>
+        <label class="flex items-start gap-3 mb-3 cursor-pointer">
+          <input type="checkbox" id="chk-no-bp" class="mt-0.5 w-4 h-4 accent-blue-500" />
+          <span class="text-slate-400 text-sm leading-relaxed">
+            I do not have uncontrolled hypertension and am not currently injured.
+          </span>
+        </label>
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="checkbox" id="chk-space" class="mt-0.5 w-4 h-4 accent-blue-500" />
+          <span class="text-slate-400 text-sm leading-relaxed">
+            I have comfortable clothing, a suitable surface, and enough space for a forearm plank.
+          </span>
+        </label>
+      </div>
+
+      <button id="btn-safety-next" disabled
+        class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
+        Continue
+      </button>
+    </section>
+
+    <!-- Step 2: INSTRUCTIONS -->
+    <section id="step-instructions" class="step">
+      <div class="mb-5">
+        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 2 of 6</p>
+        <h2 class="text-white text-xl font-bold">Exercise Instructions</h2>
+        <p class="text-slate-400 text-sm mt-1">Read these carefully before proceeding.</p>
+      </div>
+
+      <div class="bg-slate-800 rounded-2xl p-5 mb-4 space-y-4 text-sm text-slate-300 leading-relaxed">
+
+        <div>
+          <p class="text-white font-semibold mb-1">Getting into position</p>
+          <ol class="list-decimal list-inside space-y-1 text-slate-400">
+            <li>Kneel and place forearms on the floor, elbows shoulder-width apart, directly under shoulders.</li>
+            <li>Extend your legs behind you, toes on the floor, feet hip-width apart.</li>
+            <li>Lift your hips so only forearms and toes support your body. Form a straight line head-to-heels.</li>
+          </ol>
+        </div>
+
+        <div>
+          <p class="text-white font-semibold mb-1">During the hold</p>
+          <ul class="list-disc list-inside space-y-1 text-slate-400">
+            <li>Tuck chin, relax shoulders and jaw.</li>
+            <li>Breathe steadily — do <strong class="text-white">not</strong> hold your breath.</li>
+            <li>Keep hips level — no sagging or piking.</li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="text-white font-semibold mb-1">When to stop</p>
+          <p class="text-slate-400">
+            Stop when you voluntarily quit OR when your form breaks
+            (knees touch ground, or hips drop/rise and cannot be corrected within 2 seconds).
+            Stop the timer immediately when the plank ends.
+          </p>
+        </div>
+
+        <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+          <p class="text-amber-300 text-xs font-medium">
+            The music will start in the next step. There will be a short lead-in
+            during which you will answer a few quick questions — then you will start the plank.
+          </p>
+        </div>
+      </div>
+
+      <button id="btn-instructions-next"
+        class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
+        I understand — Continue
+      </button>
+    </section>
+
+    <!-- Step 3: AUDIO -->
+    <section id="step-audio" class="step">
+      <div class="mb-5">
+        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 3 of 6</p>
+        <h2 class="text-white text-xl font-bold">Start Your Audio Track</h2>
+        <p id="audio-track-label" class="text-slate-400 text-sm mt-1"></p>
+      </div>
+
+      <div class="bg-slate-800 rounded-2xl overflow-hidden mb-4">
+        <!-- YouTube player injected here by JS -->
+        <div id="yt-container" class="w-full bg-slate-900" style="min-height: 200px;">
+          <div id="yt-placeholder" class="flex flex-col items-center justify-center h-48 text-slate-500">
+            <div class="w-7 h-7 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mb-3"></div>
+            <p class="text-sm">Loading player...</p>
+          </div>
+          <div id="youtube-player"></div>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 rounded-xl p-4 mb-4 text-sm text-slate-400">
+        <p class="mb-1">
+          Set volume to about <strong class="text-white">60%</strong> — clearly audible but not uncomfortable.
+        </p>
+        <p>Use headphones if possible.</p>
+      </div>
+
+      <div id="audio-fallback" class="hidden bg-slate-700/50 rounded-xl p-4 mb-4 text-sm">
+        <p class="text-slate-300 mb-2">Player not loading?</p>
+        <p id="audio-fallback-link" class="text-blue-400"></p>
+        <p class="text-slate-500 text-xs mt-1">Open in the YouTube app, then come back here.</p>
+      </div>
+
+      <button id="btn-audio-next" disabled
+        class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
+        Music is playing — Continue
+      </button>
+    </section>
+
+    <!-- Step 4: PRE-TASK QUESTIONS -->
+    <section id="step-pre-task" class="step">
+      <div class="mb-5">
+        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 4 of 6</p>
+        <h2 class="text-white text-xl font-bold">Quick Questions</h2>
+        <p class="text-slate-400 text-sm mt-1">Answer while the music plays. Then you will start the plank.</p>
+      </div>
+
+      <div id="pre-task-form" class="space-y-5 mb-6"></div>
+
+      <!-- Camera option — shown before plank start -->
+      <div id="camera-option" class="bg-slate-800 rounded-2xl p-4 mb-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-white text-sm font-medium">Enable form verification camera</p>
+            <p class="text-slate-500 text-xs mt-0.5">Optional — takes 1 photo/sec, uploads a contact sheet after the plank</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer ml-3">
+            <input type="checkbox" id="camera-toggle" class="sr-only peer" />
+            <div class="w-11 h-6 bg-slate-700 peer-checked:bg-blue-600 rounded-full
+                        after:content-[''] after:absolute after:top-0.5 after:left-0.5
+                        after:bg-white after:rounded-full after:h-5 after:w-5
+                        after:transition-all peer-checked:after:translate-x-5"></div>
+          </label>
+        </div>
+        <p id="camera-status" class="text-xs mt-2 text-slate-500"></p>
+      </div>
+
+      <button id="btn-pre-task-next" disabled
+        class="btn-primary w-full rounded-xl py-4 font-semibold text-lg">
+        I'm Ready — Start Plank
+      </button>
+    </section>
+
+    <!-- Step 5: PLANK (full-screen, handled by CSS position:fixed) -->
+  </div><!-- end scroll container -->
+
+  <!-- PLANK STEP — outside scroll container, fixed overlay -->
+  <section id="step-plank" class="step">
+    <div id="recording-indicator" class="hidden">
+      <div class="rec-dot"></div>
+      <span>REC</span>
+    </div>
+    <p id="timer-label">HOLDING</p>
+    <div id="timer-display">00:00.0</div>
+    <button id="btn-plank-stop">STOP</button>
+  </section>
+
+  <!-- Back inside scroll container for remaining steps -->
+  <div class="pb-24 px-4 max-w-lg mx-auto">
+
+    <!-- Step 5: POST-TASK QUESTIONS -->
+    <section id="step-post-task" class="step mt-4">
+      <div class="mb-5">
+        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 5 of 6</p>
+        <h2 class="text-white text-xl font-bold">Post-Session Questions</h2>
+      </div>
+
+      <div class="bg-green-900/30 border border-green-500/40 rounded-2xl p-4 mb-5">
+        <p class="text-green-300 text-xs uppercase tracking-wider font-medium mb-1">Your plank time</p>
+        <p id="plank-time-display" class="text-white font-bold text-3xl font-mono"></p>
+      </div>
+
+      <div id="post-task-form" class="space-y-5 mb-6"></div>
+
+      <p id="submit-error" class="hidden text-red-400 text-sm bg-red-900/30 rounded-xl px-4 py-3 mb-4"></p>
+
+      <button id="btn-submit" disabled
+        class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
+        Submit Session Data
+      </button>
+    </section>
+
+    <!-- Step: SUBMITTING -->
+    <section id="step-submitting" class="step mt-20 text-center">
+      <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-white font-semibold mb-1">Saving your data...</p>
+      <p id="submitting-note" class="text-slate-400 text-sm"></p>
+    </section>
+
+    <!-- Step: SCHEDULE NEXT SESSION -->
+    <section id="step-schedule" class="step mt-4 fade-in">
+      <div class="mb-5">
+        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 6 of 6</p>
+        <h2 class="text-white text-xl font-bold">Session Complete!</h2>
+        <p id="schedule-note" class="text-slate-400 text-sm mt-1"></p>
+      </div>
+
+      <div class="bg-green-900/20 border border-green-500/30 rounded-2xl p-4 mb-5">
+        <p class="text-green-300 text-xs uppercase tracking-wider font-medium mb-1">Time recorded</p>
+        <p id="schedule-plank-time" class="text-white font-bold text-2xl font-mono"></p>
+      </div>
+
+      <div class="bg-slate-800 rounded-2xl p-5 mb-4">
+        <p class="text-slate-300 text-sm font-medium mb-2">Schedule Session <span id="next-session-num"></span></p>
+        <p class="text-slate-500 text-xs mb-3">Must be at least 24 hours and no more than 72 hours from now.</p>
+        <input id="next-session-dt" type="datetime-local"
+          class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-3 text-sm
+                 focus:outline-none focus:border-blue-500" />
+      </div>
+
+      <div id="next-calendar-links" class="mb-4"></div>
+
+      <div class="bg-slate-800 rounded-xl p-4 text-sm text-slate-400">
+        <p>
+          Between sessions: wait <strong class="text-white">at least 24 hours</strong>
+          but <strong class="text-white">no more than 72 hours</strong>.
+        </p>
+      </div>
+    </section>
+
+    <!-- Step: ALL SESSIONS COMPLETE -->
+    <section id="step-complete" class="step mt-10 text-center fade-in">
+      <div class="bg-slate-800 rounded-2xl p-8">
+        <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-white text-2xl font-bold mb-2">Study Complete!</h2>
+        <p class="text-slate-400 text-sm mb-1">
+          You have completed all sessions. Thank you for participating!
+        </p>
+        <p class="text-slate-500 text-xs">Experiment ID: 0001</p>
+      </div>
+    </section>
+
+  </div><!-- end second scroll container -->
+
+  <!-- Hidden camera elements -->
+  <video id="camera-feed" autoplay playsinline muted
+    class="fixed bottom-4 right-4 w-20 h-14 rounded-lg object-cover opacity-50 z-50 hidden"></video>
+  <canvas id="capture-canvas" class="hidden"></canvas>
+  <canvas id="sheet-canvas" class="hidden"></canvas>
+
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="js/config.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/session.js"></script>
+</body>
+</html>

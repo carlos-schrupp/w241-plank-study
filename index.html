@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Plank Study — Registration</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { DEFAULT: '#3b82f6', dark: '#1d4ed8' },
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+    .btn-primary {
+      background: #3b82f6;
+      color: #fff;
+      transition: background 0.15s;
+    }
+    .btn-primary:active { background: #1d4ed8; }
+    .btn-primary:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    .btn-outline {
+      border: 2px solid #cbd5e1;
+      color: #334155;
+      background: #fff;
+      transition: border-color 0.15s;
+    }
+    .btn-outline:active { border-color: #3b82f6; }
+    input[type="datetime-local"] { color-scheme: light; }
+    .fade-in { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body class="bg-slate-900 min-h-screen flex flex-col items-center justify-start px-4 py-8">
+
+  <!-- Header -->
+  <header class="w-full max-w-md mb-8 text-center">
+    <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">
+      UC Berkeley MIDS — W241
+    </p>
+    <h1 class="text-white text-2xl font-bold leading-tight">
+      Plank Exercise &amp; Music Study
+    </h1>
+    <p class="text-slate-400 text-sm mt-1">Experiment ID: 0001</p>
+  </header>
+
+  <!-- FORM STATE -->
+  <main id="view-form" class="w-full max-w-md fade-in">
+    <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
+      <h2 class="text-white text-lg font-semibold mb-1">Participant Registration</h2>
+      <p class="text-slate-400 text-sm mb-6">
+        Complete this form once to enroll. You will be assigned to a group and
+        given a link to schedule your sessions.
+      </p>
+
+      <form id="reg-form" novalidate>
+
+        <!-- Name -->
+        <div class="mb-4">
+          <label class="block text-slate-300 text-sm font-medium mb-1" for="field-name">
+            Full Name
+          </label>
+          <input
+            id="field-name"
+            type="text"
+            autocomplete="name"
+            placeholder="Jane Smith"
+            class="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500
+                   rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="mb-4">
+          <label class="block text-slate-300 text-sm font-medium mb-1" for="field-email">
+            Email Address
+            <span class="text-slate-500 font-normal">(used to match your sessions)</span>
+          </label>
+          <input
+            id="field-email"
+            type="email"
+            autocomplete="email"
+            placeholder="jane@example.com"
+            class="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500
+                   rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <!-- Schedule Session 1 -->
+        <div class="mb-5">
+          <label class="block text-slate-300 text-sm font-medium mb-1" for="field-datetime">
+            When would you like to do Session 1?
+          </label>
+          <input
+            id="field-datetime"
+            type="datetime-local"
+            class="w-full bg-slate-700 border border-slate-600 text-white
+                   rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            required
+          />
+          <p class="text-slate-500 text-xs mt-1">
+            Choose a time when you have a quiet space and comfortable clothing.
+          </p>
+        </div>
+
+        <!-- Safety / Consent -->
+        <div class="bg-slate-700 rounded-xl p-4 mb-5">
+          <p class="text-slate-300 text-sm font-medium mb-3">Safety &amp; Consent</p>
+          <label class="flex items-start gap-3 mb-3 cursor-pointer">
+            <input type="checkbox" id="chk-safety" class="mt-0.5 w-4 h-4 accent-blue-500" required />
+            <span class="text-slate-400 text-sm leading-relaxed">
+              I understand that forearm planks temporarily raise blood pressure.
+              I do not have uncontrolled hypertension and I am not currently injured.
+              If unsure, I will consult a doctor before participating.
+            </span>
+          </label>
+          <label class="flex items-start gap-3 cursor-pointer">
+            <input type="checkbox" id="chk-consent" class="mt-0.5 w-4 h-4 accent-blue-500" required />
+            <span class="text-slate-400 text-sm leading-relaxed">
+              I consent to participate in this study and for my anonymised data
+              to be used for academic research.
+            </span>
+          </label>
+        </div>
+
+        <!-- Error message -->
+        <p id="reg-error" class="hidden text-red-400 text-sm mb-4 bg-red-900/30 rounded-xl px-4 py-3"></p>
+
+        <!-- Submit -->
+        <button
+          id="btn-register"
+          type="submit"
+          disabled
+          class="btn-primary w-full rounded-xl py-4 font-semibold text-base"
+        >
+          Register
+        </button>
+
+      </form>
+    </div>
+  </main>
+
+  <!-- SUCCESS STATE (hidden initially) -->
+  <main id="view-success" class="hidden w-full max-w-md fade-in">
+    <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-white font-semibold text-lg">You're enrolled!</h2>
+          <p id="success-name" class="text-slate-400 text-sm"></p>
+        </div>
+      </div>
+
+      <div id="group-badge" class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 mb-5">
+        <p class="text-blue-300 text-xs font-medium uppercase tracking-wider mb-1">Your Group</p>
+        <p id="group-label" class="text-white font-mono text-sm"></p>
+      </div>
+
+      <div class="bg-slate-700/50 rounded-xl p-4 mb-5">
+        <p class="text-slate-300 text-sm font-medium mb-1">Session 1 scheduled for:</p>
+        <p id="session1-time" class="text-white font-semibold text-base"></p>
+      </div>
+
+      <div id="calendar-links-container" class="mb-5"></div>
+
+      <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+        <p class="text-amber-300 text-sm font-medium mb-2">Before Session 1</p>
+        <ul class="text-amber-200/80 text-sm space-y-1 list-disc list-inside">
+          <li>Do NOT do intense core exercises in the 24 hours before.</li>
+          <li>Wear comfortable clothing.</li>
+          <li>Have a comfortable surface (exercise mat) and enough space.</li>
+          <li>Use headphones if possible.</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="text-slate-500 text-xs text-center mt-4">
+      Already registered?
+      <button id="btn-re-register" class="text-slate-400 underline">Register again with a different email</button>
+    </p>
+  </main>
+
+  <!-- Spinner overlay -->
+  <div id="spinner" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+    <div class="bg-slate-800 rounded-2xl p-6 text-center">
+      <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+      <p class="text-white text-sm">Registering...</p>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/calendar.js"></script>
+  <script>
+  (function () {
+    // ---- DOM refs ----
+    var form       = document.getElementById('reg-form');
+    var fieldName  = document.getElementById('field-name');
+    var fieldEmail = document.getElementById('field-email');
+    var fieldDT    = document.getElementById('field-datetime');
+    var chkSafety  = document.getElementById('chk-safety');
+    var chkConsent = document.getElementById('chk-consent');
+    var btnReg     = document.getElementById('btn-register');
+    var errBox     = document.getElementById('reg-error');
+    var spinner    = document.getElementById('spinner');
+    var viewForm   = document.getElementById('view-form');
+    var viewSuc    = document.getElementById('view-success');
+
+    // ---- Set datetime min to 1 hour from now ----
+    (function setDatetimeMin() {
+      var min = new Date(Date.now() + 60 * 60 * 1000);
+      var iso = new Date(min - min.getTimezoneOffset() * 60000)
+        .toISOString().slice(0, 16);
+      fieldDT.min = iso;
+    })();
+
+    // ---- Enable submit only when all fields valid ----
+    function checkReady() {
+      var ok = fieldName.value.trim() &&
+               fieldEmail.value.includes('@') &&
+               fieldDT.value &&
+               chkSafety.checked &&
+               chkConsent.checked;
+      btnReg.disabled = !ok;
+    }
+    [fieldName, fieldEmail, fieldDT, chkSafety, chkConsent].forEach(function (el) {
+      el.addEventListener('input', checkReady);
+      el.addEventListener('change', checkReady);
+    });
+
+    // ---- Form submit ----
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      errBox.classList.add('hidden');
+      spinner.classList.remove('hidden');
+      btnReg.disabled = true;
+
+      var payload = {
+        action: 'register',
+        name:   fieldName.value.trim(),
+        email:  fieldEmail.value.trim().toLowerCase(),
+      };
+
+      try {
+        var res = await fetch(EXPERIMENT_CONFIG.apiUrl, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+        var data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        showSuccess({
+          name:      payload.name,
+          email:     payload.email,
+          groupIndex: data.groupIndex,
+          groupLabel: data.groupLabel,
+          scheduledDateTime: fieldDT.value,
+        });
+      } catch (err) {
+        errBox.textContent = 'Registration failed: ' + err.message +
+          '. Please check your connection and try again.';
+        errBox.classList.remove('hidden');
+        btnReg.disabled = false;
+      } finally {
+        spinner.classList.add('hidden');
+      }
+    });
+
+    // ---- Show success view ----
+    function showSuccess({ name, email, groupIndex, groupLabel, scheduledDateTime }) {
+      viewForm.classList.add('hidden');
+      viewSuc.classList.remove('hidden');
+      viewSuc.classList.add('fade-in');
+
+      document.getElementById('success-name').textContent = email;
+
+      // Group info
+      var perms = EXPERIMENT_CONFIG.permutations;
+      var tracks = EXPERIMENT_CONFIG.tracks;
+      var perm = perms[groupIndex];
+      var labels = perm.map(function (id) {
+        var t = tracks.find(function (t) { return t.id === id; });
+        return t ? t.label : id;
+      });
+      document.getElementById('group-label').textContent =
+        'Session order: ' + labels.join(' → ');
+
+      // Scheduled time
+      var dt = new Date(scheduledDateTime);
+      document.getElementById('session1-time').textContent = dt.toLocaleString([], {
+        weekday: 'long', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      });
+
+      // Calendar links
+      renderCalendarLinks(
+        document.getElementById('calendar-links-container'),
+        { email: email, sessionNum: 1, scheduledDateTime: scheduledDateTime }
+      );
+    }
+
+    // ---- Re-register button ----
+    document.getElementById('btn-re-register').addEventListener('click', function () {
+      viewSuc.classList.add('hidden');
+      viewForm.classList.remove('hidden');
+      viewForm.classList.add('fade-in');
+      form.reset();
+      btnReg.disabled = true;
+    });
+  })();
+  </script>
+</body>
+</html>
