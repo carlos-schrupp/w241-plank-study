@@ -179,8 +179,10 @@ document.addEventListener('visibilitychange', function () {
 async function startCamera() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
   try {
+    // Prefer front (selfie) camera so participants can see themselves
+    // while planking; browsers will fall back if not available.
     S.cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: 640, height: 480 },
+      video: { facingMode: { ideal: 'user' }, width: 640, height: 480 },
       audio: false,
     });
     var feed = $('camera-feed');
