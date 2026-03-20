@@ -548,9 +548,25 @@ async function init() {
   var trackId = perm[S.sessionNum - 1];
   S.track = EXPERIMENT_CONFIG.tracks.find(function (t) { return t.id === trackId; });
 
+  setInstructionsAudioHint();
+
   // Set up step 1 (safety)
   setupSafetyStep();
   showStep('safety');
+}
+
+function setInstructionsAudioHint() {
+  var el = $('instructions-audio-hint');
+  if (!el) return;
+  if (S.sessionNum === 1) {
+    el.textContent =
+      'Audio will start after a short “About your activity” step (Session 1 only). ' +
+      'After audio begins, you will answer a few quick questions — then you will start the plank.';
+  } else {
+    el.textContent =
+      'Audio will begin on the next screen. There will be a short lead-in ' +
+      'during which you will answer a few quick questions — then you will start the plank.';
+  }
 }
 
 // =============================================================

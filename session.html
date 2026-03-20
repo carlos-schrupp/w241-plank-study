@@ -295,10 +295,7 @@
         </div>
 
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-          <p class="text-amber-300 text-xs font-medium">
-            Audio will begin in the next step. There will be a short lead-in
-            during which you will answer a few quick questions — then you will start the plank.
-          </p>
+          <p id="instructions-audio-hint" class="text-amber-300 text-xs font-medium"></p>
         </div>
       </div>
 
@@ -377,7 +374,10 @@
         <div class="flex items-center justify-between">
           <div>
             <p class="text-white text-sm font-medium">Enable form verification camera</p>
-            <p class="text-slate-500 text-xs mt-0.5">Optional — takes 1 photo/sec, uploads a contact sheet after the plank</p>
+            <p class="text-slate-500 text-xs mt-0.5 leading-relaxed">
+              Optional — takes 1 photo per second and uploads a single contact-sheet image after the plank.
+              If you can turn this on, it helps us verify exercise form for research quality. Images are combined into one sheet and used only for this study.
+            </p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer ml-3">
             <input type="checkbox" id="camera-toggle" class="sr-only peer" />

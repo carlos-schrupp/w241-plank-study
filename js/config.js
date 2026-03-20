@@ -7,7 +7,7 @@
 const EXPERIMENT_CONFIG = {
 
   // Replace with your deployed Apps Script Web App URL after setup
-  apiUrl: 'https://script.google.com/macros/s/AKfycbxgfrOf6b98lyPs1sjtmTeNdeCeBO9beK0O1mv_JICQn2Q_oe5AnI--oam9AnWBEczc/exec',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbznhmaE9G0mqA-vxBLVFTKD1GPxjt4BM4sVBMTX5MkBEudqN3QtxGPuZaQmY5GeJO6P/exec',
 
   studyTitle: 'Physical Performance Study',
   experimentId: '0001',

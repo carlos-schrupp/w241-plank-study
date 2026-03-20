@@ -75,8 +75,8 @@ Share the following (or a shortened version) with participants. You can adapt th
 ### Registration (do once)
 
 1. Open the **registration link** (e.g. study homepage). The study is titled **Physical Performance Study**.
-2. Read the study information on the page. Enter your **email** (required for all sessions), **age**, and **gender** (Male, Female, or Other). **Full name** is optional. Answer the **injury** and **scheduling availability** questions honestly. If you are eligible, choose a **date and time** for Session 1 and check the **blood pressure** and **participation/consent** boxes.
-3. Tap **Continue** to submit. If you are not eligible, you will see a short message (your response may still be logged for research statistics). If you enroll successfully, you will see your **group** / **session order (assigned audio)** and Session 1 time.
+2. Read the study information on the page (includes a short thank-you to participants). Enter your **email** (required for all sessions), **age**, and **gender** (Male, Female, or Other). **Full name** is optional. Answer the **injury** and **scheduling availability** questions honestly. If you are eligible, choose a **date and time** for Session 1 and check the **blood pressure** and **participation/consent** boxes.
+3. Tap **Continue** to submit. If you are not eligible, you will see a short message (your response may still be logged for research statistics). If you enroll successfully, you will see a thank-you line, your **group** / **session order (assigned audio)**, and Session 1 time.
 4. Add the session to your calendar:
    - **Add to Google Calendar**: opens Google Calendar with the event pre-filled; the event description contains the link to open when it’s time.
    - **Download for Apple / Outlook Calendar**: downloads a file you can open to add the event; the description again has the session link.
@@ -89,7 +89,7 @@ Share the following (or a shortened version) with participants. You can adapt th
 1. **Before you start**: No intense core work in the last 24 hours. Have comfortable clothes, a mat or soft surface, and enough space for a forearm plank. Headphones are recommended.
 2. Open the **session link** from your calendar (or the link from the researcher). The page will show “Session X of 2” (or 3).
 3. **Step 1 — Before you begin**: Confirm the email shown is yours. Read the **Important** note about using the **same email** you used when you registered (for Session 2, the text also mentions having completed Session 1). Check the three safety/readiness boxes and tap **Continue**.
-4. **Step 2 — Instructions**: Read the short plank instructions (position, form, when to stop). Tap **I understand — Continue**.
+4. **Step 2 — Instructions**: Read the short plank instructions (position, form, when to stop). The amber note explains when **audio** starts: **Session 1** says audio comes after the short activity questions; **Session 2** says audio begins on the **next** screen. Tap **I understand — Continue**.
 5. **Session 1 only — About your activity**: Answer three short questions (activity level, optional activity type, plank frequency). Tap **Continue to audio**. *(Omitted in Session 2.)*
 6. **Audio**: The page will load **this session’s assigned audio**. Set volume to a comfortable level (around 60%). Optionally turn on “form verification camera” if you want to help with quality control (one photo per second, combined into a single image). Tap **Audio is playing — Continue**.
 7. **Quick questions**: Answer the questions while **this session’s audio** plays. When done, tap **I’m ready — Start plank**.
