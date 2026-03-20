@@ -1,20 +1,23 @@
-# W241 Plank Experiment — Documentation Index
+# W241 Plank Experiment — Documentation index
 
-This folder contains the plan, implementation reference, and user manual for the data collection website.
+This folder holds the plan, implementation reference, drafts, and user manual.
 
 | Document | Purpose |
 |----------|---------|
-| **[PLAN.md](PLAN.md)** | Design and plan: experiment context, architecture, pages and files, session flow, optional photo QC, backend, tech stack. Use this for the high-level plan and rationale. |
-| **[IMPLEMENTATION.md](IMPLEMENTATION.md)** | What was built: repository layout, frontend/backend behavior, API contract, configuration, and how to extend (e.g. add a third session or change survey questions). |
-| **[USER_MANUAL.md](USER_MANUAL.md)** | **Part 1 — Researcher setup**: one-time Google Sheets/Apps Script and Drive setup, frontend config, hosting, verification, where data lives. **Part 2 — Participant instructions**: how to register, complete a session, and troubleshoot. |
+| **[PLAN.md](PLAN.md)** | High-level design: experiment context, architecture, registration + session flow, photo QC, backend, tech stack. |
+| **[IMPLEMENTATION.md](IMPLEMENTATION.md)** | What is built: repo layout, API, `config.js`, registration payload, Sheets tabs, how to extend. |
+| **[USER_MANUAL.md](USER_MANUAL.md)** | Researcher setup (Sheets, Apps Script, deploy) and **participant** step-by-step instructions. |
+| **[registration_form_draft.md](registration_form_draft.md)** | Registration design draft (eligibility, consent, `registration_attempts`); aligns with implemented `index.html` + `Code.gs`. |
+| **[session1_survey_final_draft.md](session1_survey_final_draft.md)** | Session 1 survey **target** instrument (legacy Form parity, demographics = activity-only in session; age/gender **registration only**). |
+| **[survey_questions_draft.md](survey_questions_draft.md)** | **Live reference** for registration + current `preTasks` / `postTasks`; points to session1 draft for planned upgrades. |
 
 ## Quick reference: project files
 
-- **index.html** — Registration; after submit, calendar links for Session 1.
-- **session.html** — Full session flow (safety, instructions, audio, pre-task questions, plank + timer, post-task questions, submit, then schedule next or complete). No separate thank-you page.
-- **js/config.js** — `apiUrl`, `numSessions`, `tracks`, `preTasks`, `postTasks`. Edit here to change questions or add a third session; keep in sync with `apps-script/Code.gs` for `TRACKS` and `NUM_SESSIONS`.
-- **js/calendar.js** — Session URL and Google Calendar / .ics generation.
-- **js/session.js** — Session state machine, YouTube, timer, photo capture, survey render, submit.
-- **apps-script/Code.gs** — Backend: participant lookup (GET), register + session submit + photo upload (POST). Paste into Apps Script; set `DRIVE_FOLDER_ID` and deploy as Web App.
+- **index.html** — **Physical Performance Study** registration: email, age, gender (Male/Female/Other), optional name, injury/availability, Session 1 time + consents when eligible; `registration_attempts` logging.
+- **session.html** — Session flow: safety, instructions (+ plank image), audio, pre-task, plank + timer, post-task, submit, schedule next / complete.
+- **js/config.js** — `apiUrl`, `studyTitle`, `researcherEmail`, `numSessions`, `tracks`, `preTasks`, `postTasks`. Keep `TRACKS` / `NUM_SESSIONS` in sync with **apps-script/Code.gs**.
+- **js/calendar.js** — Session URL, Google Calendar, `.ics`.
+- **js/session.js** — Session state machine, YouTube, timer, optional front-camera capture, surveys, submit.
+- **apps-script/Code.gs** — `doGet` (participant by email); `doPost`: `register`, `session`, `upload_photo`. Sheets: **participants**, **sessions**, **registration_attempts**.
 
-For full detail and correct formatting (including diagrams and step-by-step flows), see **PLAN.md**, **IMPLEMENTATION.md**, and **USER_MANUAL.md**.
+For full detail see **PLAN.md**, **IMPLEMENTATION.md**, and **USER_MANUAL.md**.

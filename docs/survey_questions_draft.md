@@ -1,136 +1,115 @@
-# Survey and registration content — draft for review
+# Survey and registration content — reference
 
-This document mirrors what the site collects **today** (as defined in `index.html` for registration and `js/config.js` for in-session surveys). Use it to revise wording, scales, or structure before locking the final protocol.
+This document describes what the site collects **as implemented** in `index.html` (registration) and `js/config.js` + `js/session.js` (in-session surveys). Design rationale and legacy alignment: **[session1_survey_final_draft.md](session1_survey_final_draft.md)**, **[session2_survey_final_draft.md](session2_survey_final_draft.md)**.
 
-**Implementation note:** Pre-task and post-task items in `config.js` are **one shared list** for every session (Session 1, Session 2, and any future Session 3). If you need *different* questions on Session 2 than on Session 1, you will need a small code change (e.g. separate arrays keyed by `sessionNum`) in addition to editing this document.
+**Implementation note:** `preTasks` is shared across sessions. **Session 1** adds **`session1Activity`** (after instructions, before audio); answers are **merged into** `pre_task_answers` JSON on submit. **Post-task** lists are built in `session.js` from **`postTasksPart1`**, optional **`postTasksSession2Extra`** (when `sessionNum === 2`), **`postTasksPart2`**, and a **`comments`** item (wording differs Session 1 vs 2).
 
 ---
 
 ## Overview: when each instrument appears
 
 | Phase | Page | When (participant experience) | Stored as |
-|-----|------|------------------------------|-----------|
-| Registration | `index.html` | Once, before any session; after submit, calendar links for Session 1 appear | `participants` row in Google Sheet (name, email, group assignment; Session 1 scheduling time is **not** a column—only used for calendar event) |
-| Pre-task survey | `session.html` (Step 4) | **After** music has started and participant tapped through audio step; **before** they tap “I’m ready — Start plank.” Music continues during this short form (~target: ~60 seconds). Same flow for Session 1 and Session 2; **today’s audio is whatever track is assigned for that session** (Latin-square order). | JSON in `sessions.pre_task_answers` |
-| Post-task survey | `session.html` (Step 5) | **Immediately after** they tap STOP on the plank timer; plank duration is shown read-only above the questions. Same items for Session 1 and Session 2 in the current app. | JSON in `sessions.post_task_answers` plus `plank_duration_sec` |
+|-------|------|------------------------------|-----------|
+| Registration | `index.html` | Once, before any session; study information text; then fields and submit | **`participants`** row if enrolled; **`registration_attempts`** row for **every** submit (including screen-outs) |
+| Session 1 activity | `session.html` | After instructions, **before** audio; **Session 1 only** | Keys merged into **`sessions.pre_task_answers`** with pre-task audio block |
+| Pre-task survey | `session.html` | After **audio** has started; before “I’m ready — Start plank.” Audio continues. | JSON in `sessions.pre_task_answers` (with S1 activity keys if Session 1) |
+| Post-task survey | `session.html` | Immediately after STOP on the timer; duration read-only above questions. | JSON in `sessions.post_task_answers` plus `plank_duration_sec` |
+
+**Not asked in session:** **Age** and **gender** — only at **registration**.
 
 ---
 
 ## 1. Registration (`index.html`)
 
-**Moment:** One-time enrollment. Participant has not yet done any plank in the study. They choose when Session 1 will be and receive calendar event(s) with the Session 1 link embedded.
+**Moment:** One-time enrollment. Study title: **Physical Performance Study**. In-app study description (no PDF): voluntary participation, confidentiality, email use, two sessions, timing window, de-identified data, contact **carlos.schrupp@berkeley.edu** (also in `EXPERIMENT_CONFIG.researcherEmail`).
 
-### Fields (free text / structured)
+### Fields (order on screen)
 
-1. **Full name**  
-   - Label: “Full Name”  
-   - Type: text  
-   - Purpose: identify / contact; stored in Sheet.
+| Field | Required | Notes |
+|-------|----------|--------|
+| **Email** | Yes | Key for sessions and calendar link. |
+| **Age** | Yes | Integer; no min/max enforced in copy. Stored in Sheet. |
+| **Gender** | Yes | **Male** / **Female** / **Other** → stored as `male` / `female` / `other`. |
+| **Full name** | No | Optional; email remains primary key. |
+| **Injury unsafe for plank?** | Yes | No / Yes. If **Yes** → screen-out message; attempt **logged**; not enrolled. |
+| **Available** for two sessions (≤10 min each, 24–72 h apart)? | Yes | Yes / No. If **No** → screen-out; **logged**. |
+| **Session 1 date/time** | If eligible | Shown only when injury=No and availability=Yes; `datetime-local`. |
+| **Blood pressure / hypertension** checkbox | If enrolling | Required to enroll. |
+| **Combined consent** (read, agree to participate, consent to data use) | If enrolling | Required to enroll. |
 
-2. **Email address**  
-   - Label: “Email Address (used to match your sessions)”  
-   - Type: email  
-   - Purpose: key to merge Session 1 and Session 2 (and backend lookup). Must be consistent across sessions.
+### Submit button
 
-3. **Session 1 date and time**  
-   - Label: “When would you like to do Session 1?”  
-   - Type: `datetime-local`  
-   - Helper text: “Choose a time when you have a quiet space and comfortable clothing.”  
-   - Purpose: only drives the **calendar event** creation in the browser (not stored as a dedicated column unless you add that to the backend later).
+- Label: **Continue** (disabled until required fields valid).
+- **Screen-out** paths still POST to the backend so attempts are recorded.
 
-### Safety and consent (checkboxes, all required to register)
+### After successful enrollment (or already registered)
 
-**Checkbox A — Safety**
+- Success view: group / session order, Session 1 time, Google Calendar + .ics.
+- **Already registered** email: same success UI with title “Already registered.”
 
-> I understand that forearm planks temporarily raise blood pressure. I do not have uncontrolled hypertension and I am not currently injured. If unsure, I will consult a doctor before participating.
+### Related docs
 
-**Checkbox B — Consent**
-
-> I consent to participate in this study and for my anonymised data to be used for academic research.
-
-### After registration (not “questions” but useful for revision)
-
-- Success screen shows **group assignment** (session order of audio conditions, derived from Latin square).
-- User is offered **Google Calendar** link and **.ics** download; event description includes deep link: `session.html?email=…&session=1`.
+- **[registration_form_draft.md](registration_form_draft.md)** — design rationale and backend schema notes.
+- **Sheets:** `participants` columns include `id`, `name`, `email`, `age`, `gender`, `group_index`, `group_label`, `sessions_completed`, `registered_at`. **`registration_attempts`** logs all submissions with `enrollment_status` (e.g. `enrolled`, `screened_out_injury`, `screened_out_availability`, `already_registered`).
 
 ---
 
-## 2. Session 1 — Pre-task survey (`config.js` → `preTasks`)
+## 2. Session 1 only — activity background (`config.js` → `session1Activity`)
 
-**Moment:** Participant is in **Session 1**, on the session page, **after** instructions and **after** they confirmed the assigned track is playing. They answer while **music is still playing**, before entering the full-screen plank timer. All three items are **required** in the UI (no `required: false`).
+**Moment:** After **Exercise instructions**, before **audio**. Omitted for Session 2+.
 
-| ID (stored key) | Type | Question text | Response scale / options |
-|-----------------|------|---------------|---------------------------|
-| `motivation` | Scale 1–5 | How motivated are you to exercise right now? | **1** = Not at all … **5** = Very motivated |
-| `physical_feeling` | Scale 1–5 | How are you feeling physically right now? | **1** = Poor … **5** = Great |
-| `music_liking` | Scale 1–5 | How much do you like today's music so far? | **1** = Strongly dislike … **5** = Love it |
-
-**Revision prompts for you:**
-
-- “Today’s music” in Session 1 is the **first** condition in that participant’s order; consider whether the wording should name the genre or stay blind.
-- Consider whether you want **attention checks** or **manipulation checks** here while music is salient.
+| ID | Type | Question | Notes |
+|----|------|----------|--------|
+| `activity_level` | radio | Regular gym-goer / physically active? | 3 frequency options |
+| `activity_type` | textarea | Type of activity usually done? | Optional |
+| `plank_frequency` | radio | Regularly perform planks? | Same 3 options as `activity_level` |
 
 ---
 
-## 3. Session 1 — Post-task survey (`config.js` → `postTasks`)
+## 3. Pre-task survey (`config.js` → `preTasks`)
 
-**Moment:** Session 1 plank **just ended**; timer stopped; duration displayed. Participant is still on the same page, **before** submit and **before** scheduling Session 2.
+**Moment:** Session page; **assigned audio** playing; before plank.
 
-| ID (stored key) | Type | Question text | Response scale / options |
-|-----------------|------|---------------|---------------------------|
-| `rpe` | Scale 1–10 | Rate your perceived exertion (1 = very easy, 10 = maximum effort) | **1** = Very easy … **10** = Max effort |
-| `music_effect` | Scale 1–5 | How did the music affect your plank performance? | **1** = Hurt my performance … **5** = Helped my performance |
-| `form_quality` | Radio (single choice) | How would you describe your form during the plank? | (1) Maintained proper form throughout; (2) Mostly good — minor breaks corrected; (3) Form failed — I stopped due to form breakdown |
-| `comments` | Textarea (optional) | Any comments about this session? (optional) | Free text; **not** required |
-
----
-
-## 4. Session 2 — Pre-task survey
-
-**Moment:** Same screen and **same question objects** as Session 1 pre-task: after audio step, music playing, **before** “Start plank.” The **track** differs from Session 1 for almost all participants (crossover order), but the **stem** of each item is unchanged in code.
-
-**Verbatim items** (identical to Section 2):
-
-1. **motivation** — “How motivated are you to exercise right now?” (1–5, Not at all … Very motivated)
-2. **physical_feeling** — “How are you feeling physically right now?” (1–5, Poor … Great)
-3. **music_liking** — “How much do you like today's music so far?” (1–5, Strongly dislike … Love it)
-
-**Revision prompts for you:**
-
-- Session 2 may be **24–72 hours** after Session 1; consider whether `physical_feeling` should reference “relative to yesterday” or stay state-based.
-- **Order effects**: first vs second exposure to each genre; you may want session-specific wording (requires code split).
+| ID | Type | Question (summary) | Scale |
+|----|------|-------------------|--------|
+| `energy_pre_plank` | scale | After audio began, before plank: how physically energized? | 1–7 |
+| `motivation_pre_plank` | scale | After audio began, before plank: motivated to perform well? | 1–7 |
+| `music_liking` | scale | How much like this session’s audio so far? | 1–7 |
 
 ---
 
-## 5. Session 2 — Post-task survey
+## 4. Post-task survey (built in `session.js` from config parts)
 
-**Moment:** Session 2 plank **just ended**; same as Section 3 but for the second scheduled session.
+**Moment:** Immediately after STOP.
 
-**Verbatim items** (identical to Section 3):
+**All sessions (order):** `rpe` (0–10), `headphones`, `plank_pause`, `plank_pause_detail` (required if pause Yes), then Session 2 only: `instructions_ease` (1–5), `overall_experience` (1–5), then `volume_clear`, `music_effect`, `form_quality`, `comments`.
 
-1. **rpe** — 1–10 perceived exertion  
-2. **music_effect** — 1–5 hurt vs helped  
-3. **form_quality** — three radio options  
-4. **comments** — optional textarea  
-
-**Revision prompts for you:**
-
-- Consider adding **fatigue** or **sleep** if spacing is tight.
-- If you randomize or counterbalance order, **music_effect** might reference “this session’s music” explicitly.
-
----
-
-## 6. Optional: form verification camera (not survey)
-
-**Moment:** Toggle appears on the pre-task step (before plank). If enabled, 1 fps stills during plank; not questionnaire content.
+| ID | Type | Notes |
+|----|------|--------|
+| `rpe` | scale 0–10 | Legacy anchors in question text |
+| `headphones` | radio | Yes / No |
+| `plank_pause` | radio | Yes / No |
+| `plank_pause_detail` | textarea | Shown only if pause **Yes** |
+| `instructions_ease` | scale 1–5 | **Session 2 only** |
+| `overall_experience` | scale 1–5 | **Session 2 only** |
+| `volume_clear` | radio | Yes / Somewhat / No |
+| `music_effect` | scale 1–5 | |
+| `form_quality` | radio | Three form options |
+| `comments` | textarea | Optional; Session 2 wording asks about study experience |
 
 ---
 
-## Where to edit after you finalize copy
+## 5. Optional: form verification camera
+
+**Moment:** Toggle before plank (pre-task step). Front camera preferred; 1 fps contact sheet uploaded after session submit when enabled.
+
+---
+
+## Where to edit
 
 | Content | File |
 |---------|------|
-| Registration labels and consent text | `index.html` |
-| Pre-task and post-task items (wording, scales, new questions) | `js/config.js` → `preTasks`, `postTasks` |
-
-If you split Session 1 vs Session 2 question sets, plan to update `js/session.js` (which reads `EXPERIMENT_CONFIG.preTasks` / `postTasks`) and document the storage shape so analysis scripts match.
+| Registration copy / fields | `index.html` (and `Code.gs` for new stored fields) |
+| Session 1 activity | `js/config.js` → `session1Activity` |
+| Pre-task items | `js/config.js` → `preTasks` |
+| Post-task blocks | `js/config.js` → `postTasksPart1`, `postTasksSession2Extra`, `postTasksPart2`; merge logic + conditionals in `js/session.js` |

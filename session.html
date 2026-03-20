@@ -206,7 +206,7 @@
     <!-- Step 1: SAFETY CHECK -->
     <section id="step-safety" class="step">
       <div class="mb-6">
-        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 1 of 6</p>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 1</p>
         <h2 class="text-white text-xl font-bold">Before You Begin</h2>
         <p id="safety-session-label" class="text-slate-400 text-sm mt-1"></p>
       </div>
@@ -219,6 +219,10 @@
           Wrong email? <a href="index.html" class="text-blue-400 underline">Back to registration</a>
         </p>
       </div>
+
+      <p id="safety-email-reminder"
+        class="text-amber-100/95 text-sm leading-relaxed border border-amber-500/35 bg-amber-950/25 rounded-2xl px-4 py-3 mb-4"
+        role="note"></p>
 
       <div class="bg-slate-800 rounded-2xl p-5 mb-5">
         <p class="text-slate-300 text-sm font-medium mb-3">Safety check</p>
@@ -251,7 +255,7 @@
     <!-- Step 2: INSTRUCTIONS -->
     <section id="step-instructions" class="step">
       <div class="mb-5">
-        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 2 of 6</p>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 2</p>
         <h2 class="text-white text-xl font-bold">Exercise Instructions</h2>
         <p class="text-slate-400 text-sm mt-1">Read these carefully before proceeding.</p>
       </div>
@@ -292,7 +296,7 @@
 
         <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
           <p class="text-amber-300 text-xs font-medium">
-            The music will start in the next step. There will be a short lead-in
+            Audio will begin in the next step. There will be a short lead-in
             during which you will answer a few quick questions — then you will start the plank.
           </p>
         </div>
@@ -304,11 +308,27 @@
       </button>
     </section>
 
+    <!-- Step 2b: SESSION 1 ONLY — activity background -->
+    <section id="step-session1-activity" class="step">
+      <div class="mb-5">
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 3</p>
+        <h2 class="text-white text-xl font-bold">About your activity</h2>
+        <p class="text-slate-400 text-sm mt-1">A few quick questions before the audio step. Session 1 only.</p>
+      </div>
+
+      <div id="session1-activity-form" class="space-y-5 mb-6"></div>
+
+      <button id="btn-session1-activity-next" disabled
+        class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
+        Continue to audio
+      </button>
+    </section>
+
     <!-- Step 3: AUDIO -->
     <section id="step-audio" class="step">
       <div class="mb-5">
-        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 3 of 6</p>
-        <h2 class="text-white text-xl font-bold">Start Your Audio Track</h2>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 3</p>
+        <h2 class="text-white text-xl font-bold">Start this session&apos;s audio</h2>
         <p id="audio-track-label" class="text-slate-400 text-sm mt-1"></p>
       </div>
 
@@ -338,16 +358,16 @@
 
       <button id="btn-audio-next" disabled
         class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
-        Music is playing — Continue
+        Audio is playing — Continue
       </button>
     </section>
 
     <!-- Step 4: PRE-TASK QUESTIONS -->
     <section id="step-pre-task" class="step">
       <div class="mb-5">
-        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 4 of 6</p>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 4</p>
         <h2 class="text-white text-xl font-bold">Quick Questions</h2>
-        <p class="text-slate-400 text-sm mt-1">Answer while the music plays. Then you will start the plank.</p>
+        <p class="text-slate-400 text-sm mt-1">Answer while the audio plays. Then you will start the plank.</p>
       </div>
 
       <div id="pre-task-form" class="space-y-5 mb-6"></div>
@@ -396,7 +416,7 @@
     <!-- Step 5: POST-TASK QUESTIONS -->
     <section id="step-post-task" class="step mt-4">
       <div class="mb-5">
-        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 5 of 6</p>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 5</p>
         <h2 class="text-white text-xl font-bold">Post-Session Questions</h2>
       </div>
 
@@ -425,7 +445,7 @@
     <!-- Step: SCHEDULE NEXT SESSION -->
     <section id="step-schedule" class="step mt-4 fade-in">
       <div class="mb-5">
-        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Step 6 of 6</p>
+        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Schedule next session</p>
         <h2 class="text-white text-xl font-bold">Session Complete!</h2>
         <p id="schedule-note" class="text-slate-400 text-sm mt-1"></p>
       </div>

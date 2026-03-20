@@ -19,8 +19,10 @@
 //
 // 4. Paste the Web App URL into js/config.js → apiUrl.
 //
-// 5. The Sheets tabs (participants, sessions) are created automatically
-//    on first request. You do not need to create them manually.
+// 5. Tabs created automatically: participants, sessions, registration_attempts
+//
+// UPGRADE: If participants sheet already exists, ensure columns include:
+//    ... email, age, gender, group_index ...  (add missing columns after age)
 // =============================================================
 
 var DRIVE_FOLDER_ID = 'REPLACE_WITH_YOUR_GOOGLE_DRIVE_FOLDER_ID';
@@ -69,7 +71,7 @@ function _getSheet(name) {
     sheet = ss.insertSheet(name);
     if (name === 'participants') {
       sheet.appendRow([
-        'id', 'name', 'email',
+        'id', 'name', 'email', 'age', 'gender',
         'group_index', 'group_label',
         'sessions_completed', 'registered_at'
       ]);
@@ -82,9 +84,21 @@ function _getSheet(name) {
         'contact_sheet_url', 'submitted_at'
       ]);
       sheet.setFrozenRows(1);
+    } else if (name === 'registration_attempts') {
+      sheet.appendRow([
+        'attempt_id', 'attempted_at', 'email', 'name', 'age', 'gender',
+        'injury_unsafe', 'availability_yes',
+        'session1_planned_at', 'enrollment_status', 'participant_id',
+        'consent_bp', 'consent_participate'
+      ]);
+      sheet.setFrozenRows(1);
     }
   }
   return sheet;
+}
+
+function _logRegistrationAttempt(row) {
+  _getSheet('registration_attempts').appendRow(row);
 }
 
 function _findParticipant(email) {
@@ -145,12 +159,85 @@ function doPost(e) {
 function _handleRegister(data) {
   var name  = (data.name  || '').trim();
   var email = (data.email || '').trim().toLowerCase();
-  if (!name || !email) return _json({ error: 'name and email required' });
+  var ageNum = parseInt(String(data.age), 10);
+
+  var injuryUnsafe = data.injuryUnsafe === true;
+  var availabilityYes = data.availability === true;
+
+  var session1 = (data.session1PlannedAt || '').trim();
+  var consentBp = data.consentBp === true;
+  var consentParticipate = data.consentParticipate === true;
+
+  if (!email || email.indexOf('@') === -1) {
+    return _json({ error: 'Valid email is required.' });
+  }
+  if (isNaN(ageNum)) {
+    return _json({ error: 'Age is required.' });
+  }
+
+  var genderNorm = String(data.gender || '').trim().toLowerCase();
+  if (['male', 'female', 'other'].indexOf(genderNorm) === -1) {
+    return _json({ error: 'Please select Male, Female, or Other.' });
+  }
+
+  var now = new Date().toISOString();
+  var attemptId = Utilities.getUuid();
+
+  /** @type {string} */
+  var enrollmentStatus;
+  var participantId = '';
+
+  if (injuryUnsafe) {
+    enrollmentStatus = 'screened_out_injury';
+    _logRegistrationAttempt([
+      attemptId, now, email, name, ageNum, genderNorm,
+      'yes', availabilityYes ? 'yes' : 'no',
+      session1, enrollmentStatus, '',
+      consentBp, consentParticipate
+    ]);
+    return _json({
+      success: true,
+      enrolled: false,
+      enrollmentStatus: enrollmentStatus,
+    });
+  }
+
+  if (!availabilityYes) {
+    enrollmentStatus = 'screened_out_availability';
+    _logRegistrationAttempt([
+      attemptId, now, email, name, ageNum, genderNorm,
+      'no', 'no',
+      session1, enrollmentStatus, '',
+      consentBp, consentParticipate
+    ]);
+    return _json({
+      success: true,
+      enrolled: false,
+      enrollmentStatus: enrollmentStatus,
+    });
+  }
+
+  // Eligible for enrollment — require consents and session time
+  if (!consentBp || !consentParticipate) {
+    return _json({ error: 'Please confirm the safety and participation statements to enroll.' });
+  }
+  if (!session1) {
+    return _json({ error: 'Please choose a date and time for Session 1.' });
+  }
 
   var existing = _findParticipant(email);
   if (existing) {
+    enrollmentStatus = 'already_registered';
+    _logRegistrationAttempt([
+      attemptId, now, email, name, ageNum, genderNorm,
+      'no', 'yes',
+      session1, enrollmentStatus, String(existing.id),
+      consentBp, consentParticipate
+    ]);
     return _json({
       alreadyRegistered: true,
+      enrolled: false,
+      enrollmentStatus: enrollmentStatus,
       participantId: existing.id,
       groupIndex: Number(existing.group_index),
       groupLabel: existing.group_label,
@@ -159,18 +246,29 @@ function _handleRegister(data) {
   }
 
   var sheet = _getSheet('participants');
-  // Exclude header row when counting existing participants
   var total = Math.max(0, sheet.getLastRow() - 1);
   var groupIndex = total % ALL_PERMUTATIONS.length;
   var groupLabel = ALL_PERMUTATIONS[groupIndex].join('');
-  var id  = Utilities.getUuid();
-  var now = new Date().toISOString();
+  participantId = Utilities.getUuid();
 
-  sheet.appendRow([id, name, email, groupIndex, groupLabel, 0, now]);
+  sheet.appendRow([
+    participantId, name, email, ageNum, genderNorm,
+    groupIndex, groupLabel, 0, now
+  ]);
+
+  enrollmentStatus = 'enrolled';
+  _logRegistrationAttempt([
+    attemptId, now, email, name, ageNum, genderNorm,
+    'no', 'yes',
+    session1, enrollmentStatus, participantId,
+    consentBp, consentParticipate
+  ]);
 
   return _json({
     success: true,
-    participantId: id,
+    enrolled: true,
+    enrollmentStatus: enrollmentStatus,
+    participantId: participantId,
     groupIndex: groupIndex,
     groupLabel: groupLabel,
     sessionsCompleted: 0,
@@ -200,15 +298,18 @@ function _handleSession(data) {
     Number(data.plankDurationSec) || 0,
     JSON.stringify(data.preTasks  || {}),
     JSON.stringify(data.postTasks || {}),
-    '', // contact_sheet_url — filled later by upload_photo
+    '',
     now,
   ]);
 
-  // Increment sessions_completed
   var pSheet = _getSheet('participants');
   var completed = Number(p.sessions_completed) + 1;
-  // sessions_completed is column F (index 5, 1-based = 6)
-  pSheet.getRange(p._row, 6).setValue(completed);
+  var hdr = pSheet.getRange(1, 1, 1, pSheet.getLastColumn()).getValues()[0];
+  var scCol = hdr.indexOf('sessions_completed');
+  if (scCol < 0) {
+    return _json({ error: 'participants sheet must include sessions_completed column' });
+  }
+  pSheet.getRange(p._row, scCol + 1).setValue(completed);
 
   return _json({
     success: true,
@@ -229,7 +330,6 @@ function _handleUploadPhoto(data) {
     return _json({ error: 'email, sessionNum, and imageBase64 required' });
   }
 
-  // Locate the session row (most recent match)
   var sheet = _getSheet('sessions');
   var rows = sheet.getDataRange().getValues();
   var headers = rows[0];
@@ -243,7 +343,7 @@ function _handleUploadPhoto(data) {
       String(rows[i][emailCol]).toLowerCase() === email &&
       Number(rows[i][sessionNumCol]) === sessionNum
     ) {
-      targetRow = i + 1; // 1-indexed
+      targetRow = i + 1;
       break;
     }
   }

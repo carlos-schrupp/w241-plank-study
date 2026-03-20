@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
-  <title>Plank Study — Registration</title>
+  <title>Physical Performance Study — Registration</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -39,36 +39,124 @@
     input[type="datetime-local"] { color-scheme: light; }
     .fade-in { animation: fadeIn 0.3s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .radio-row input { accent-color: #3b82f6; }
   </style>
 </head>
 <body class="bg-slate-900 min-h-screen flex flex-col items-center justify-start px-4 py-8">
 
-  <!-- Header -->
-  <header class="w-full max-w-md mb-8 text-center">
+  <header class="w-full max-w-md mb-6 text-center">
     <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">
       UC Berkeley MIDS — W241
     </p>
     <h1 class="text-white text-2xl font-bold leading-tight">
-      Plank Exercise &amp; Music Study
+      Physical Performance Study
     </h1>
     <p class="text-slate-400 text-sm mt-1">Experiment ID: 0001</p>
   </header>
 
   <!-- FORM STATE -->
-  <main id="view-form" class="w-full max-w-md fade-in">
+  <main id="view-form" class="w-full max-w-md fade-in pb-8">
     <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
-      <h2 class="text-white text-lg font-semibold mb-1">Participant Registration</h2>
-      <p class="text-slate-400 text-sm mb-6">
-        Complete this form once to enroll. You will be assigned to a group and
-        given a link to schedule your sessions.
+      <h2 class="text-white text-lg font-semibold mb-1">Registration</h2>
+      <p class="text-slate-400 text-sm mb-4">
+        Complete this form once to enroll. Fields marked * are required.
       </p>
+
+      <!-- Study description -->
+      <div class="bg-slate-700/60 rounded-xl p-4 mb-5 max-h-64 overflow-y-auto text-sm text-slate-300 leading-relaxed space-y-3">
+        <p class="text-white font-semibold">Physical Performance Study — information</p>
+        <p>
+          You are invited to participate in a research study examining how <strong class="text-white">music</strong>
+          affects <strong class="text-white">physical performance</strong> during a short exercise task
+          (<strong class="text-white">forearm plank</strong>). In each session you will open the study website,
+          follow <strong class="text-white">on-screen instructions</strong> in your browser, and perform a plank
+          while listening to the <strong class="text-white">assigned audio</strong> for that session
+          (order varies by participant to keep the study fair).
+          <strong class="text-white">All task instructions are provided in the website during your sessions;
+          no separate PDF is used.</strong>
+        </p>
+        <p>
+          The study has <strong class="text-white">two sessions</strong>. Each session takes
+          <strong class="text-white">no more than about 10 minutes</strong> (including setup and short questions).
+          The two sessions should be completed <strong class="text-white">at least 24 hours apart</strong>
+          and <strong class="text-white">no more than 72 hours apart</strong>.
+        </p>
+        <p>
+          <strong class="text-white">Participation is voluntary.</strong> You may
+          <strong class="text-white">withdraw at any time</strong> without penalty.
+        </p>
+        <p>
+          <strong class="text-white">Confidentiality:</strong> Your responses will be kept
+          <strong class="text-white">confidential</strong>. Your <strong class="text-white">email</strong>
+          will only be used to <strong class="text-white">link your answers across the two sessions</strong>
+          and to provide <strong class="text-white">study links and reminders</strong> (e.g. calendar events).
+          It will not be used for unrelated marketing.
+        </p>
+        <p>
+          <strong class="text-white">Data use:</strong> With your consent below, <strong class="text-white">de-identified</strong>
+          or limited data may be used for <strong class="text-white">academic research</strong> and reporting,
+          consistent with your consent and institutional policies.
+        </p>
+        <p class="text-slate-400 text-xs" id="contact-line"></p>
+      </div>
 
       <form id="reg-form" novalidate>
 
-        <!-- Name -->
+        <div class="mb-4">
+          <label class="block text-slate-300 text-sm font-medium mb-1" for="field-email">
+            Email address *
+          </label>
+          <input
+            id="field-email"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500
+                   rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            required
+          />
+          <p class="text-slate-500 text-xs mt-1">
+            Required. Used only to match Session 1 and Session 2 and to send your session link (e.g. in your calendar).
+          </p>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-slate-300 text-sm font-medium mb-1" for="field-age">
+            Age *
+          </label>
+          <input
+            id="field-age"
+            type="number"
+            inputmode="numeric"
+            step="1"
+            placeholder="e.g. 28"
+            class="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500
+                   rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            required
+          />
+        </div>
+
+        <div class="mb-4">
+          <p class="text-slate-300 text-sm font-medium mb-2">Gender *</p>
+          <div class="radio-row flex flex-col gap-2">
+            <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+              <input type="radio" name="gender" id="gender-male" value="male" class="w-4 h-4" />
+              Male
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+              <input type="radio" name="gender" id="gender-female" value="female" class="w-4 h-4" />
+              Female
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+              <input type="radio" name="gender" id="gender-other" value="other" class="w-4 h-4" />
+              Other
+            </label>
+          </div>
+        </div>
+
         <div class="mb-4">
           <label class="block text-slate-300 text-sm font-medium mb-1" for="field-name">
-            Full Name
+            Full name <span class="text-slate-500 font-normal">(optional)</span>
           </label>
           <input
             id="field-name"
@@ -77,82 +165,103 @@
             placeholder="Jane Smith"
             class="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500
                    rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-            required
-          />
-        </div>
-
-        <!-- Email -->
-        <div class="mb-4">
-          <label class="block text-slate-300 text-sm font-medium mb-1" for="field-email">
-            Email Address
-            <span class="text-slate-500 font-normal">(used to match your sessions)</span>
-          </label>
-          <input
-            id="field-email"
-            type="email"
-            autocomplete="email"
-            placeholder="jane@example.com"
-            class="w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500
-                   rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-            required
-          />
-        </div>
-
-        <!-- Schedule Session 1 -->
-        <div class="mb-5">
-          <label class="block text-slate-300 text-sm font-medium mb-1" for="field-datetime">
-            When would you like to do Session 1?
-          </label>
-          <input
-            id="field-datetime"
-            type="datetime-local"
-            class="w-full bg-slate-700 border border-slate-600 text-white
-                   rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
-            required
           />
           <p class="text-slate-500 text-xs mt-1">
-            Choose a time when you have a quiet space and comfortable clothing.
+            Optional. Your email is the main key used to pair your sessions.
           </p>
         </div>
 
-        <!-- Safety / Consent -->
-        <div class="bg-slate-700 rounded-xl p-4 mb-5">
-          <p class="text-slate-300 text-sm font-medium mb-3">Safety &amp; Consent</p>
-          <label class="flex items-start gap-3 mb-3 cursor-pointer">
-            <input type="checkbox" id="chk-safety" class="mt-0.5 w-4 h-4 accent-blue-500" required />
-            <span class="text-slate-400 text-sm leading-relaxed">
-              I understand that forearm planks temporarily raise blood pressure.
-              I do not have uncontrolled hypertension and I am not currently injured.
-              If unsure, I will consult a doctor before participating.
-            </span>
-          </label>
-          <label class="flex items-start gap-3 cursor-pointer">
-            <input type="checkbox" id="chk-consent" class="mt-0.5 w-4 h-4 accent-blue-500" required />
-            <span class="text-slate-400 text-sm leading-relaxed">
-              I consent to participate in this study and for my anonymised data
-              to be used for academic research.
-            </span>
-          </label>
+        <div class="mb-4">
+          <p class="text-slate-300 text-sm font-medium mb-2">
+            Do you have any injuries or medical conditions that would make performing a plank exercise unsafe for you? *
+          </p>
+          <div class="radio-row flex flex-col gap-2">
+            <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+              <input type="radio" name="injury" id="injury-no" value="no" class="w-4 h-4" />
+              No
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+              <input type="radio" name="injury" id="injury-yes" value="yes" class="w-4 h-4" />
+              Yes
+            </label>
+          </div>
         </div>
 
-        <!-- Error message -->
+        <div class="mb-4">
+          <p class="text-slate-300 text-sm font-medium mb-2">
+            Are you available to complete two sessions, each lasting no more than 10 minutes, at least 24 hours apart but no more than 72 hours apart? *
+          </p>
+          <div class="radio-row flex flex-col gap-2">
+            <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+              <input type="radio" name="avail" id="avail-yes" value="yes" class="w-4 h-4" />
+              Yes
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-slate-300 text-sm">
+              <input type="radio" name="avail" id="avail-no" value="no" class="w-4 h-4" />
+              No
+            </label>
+          </div>
+        </div>
+
+        <div id="enrollment-extra" class="hidden mb-4 space-y-4">
+          <div>
+            <label class="block text-slate-300 text-sm font-medium mb-1" for="field-datetime">
+              When would you like to start Session 1? *
+            </label>
+            <input
+              id="field-datetime"
+              type="datetime-local"
+              class="w-full bg-slate-700 border border-slate-600 text-white
+                     rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
+            />
+            <p class="text-slate-500 text-xs mt-1">
+              Pick a time when you have a quiet space, comfortable clothing, and ~10 minutes.
+              Session 2 will be scheduled from the website after Session 1, within the 24–72 hour window.
+            </p>
+          </div>
+
+          <div class="bg-slate-700 rounded-xl p-4">
+            <p class="text-slate-300 text-sm font-medium mb-3">Safety &amp; consent *</p>
+            <label class="flex items-start gap-3 mb-3 cursor-pointer">
+              <input type="checkbox" id="chk-bp" class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0" />
+              <span class="text-slate-400 text-sm leading-relaxed">
+                I understand that isometric exercises such as forearm planks can <strong class="text-slate-300">temporarily increase blood pressure</strong>.
+                I do <strong class="text-slate-300">not</strong> have <strong class="text-slate-300">uncontrolled hypertension</strong>.
+                If I am unsure whether exercise is safe for me, I will <strong class="text-slate-300">consult a qualified health professional</strong> before participating.
+              </span>
+            </label>
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" id="chk-consent" class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0" />
+              <span class="text-slate-400 text-sm leading-relaxed">
+                I have <strong class="text-slate-300">read</strong> the study description on this page,
+                <strong class="text-slate-300">agree to participate</strong> in this study, and
+                <strong class="text-slate-300">consent</strong> to the <strong class="text-slate-300">research team</strong>
+                using my study data <strong class="text-slate-300">as described above</strong>
+                (including <strong class="text-slate-300">de-identified</strong> or aggregated reporting where permitted by this project and my institution).
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <p id="eligibility-hint" class="text-slate-500 text-xs mb-4">
+          After you answer the two eligibility questions above, you will be able to choose Session 1 and confirm consent (if you are eligible).
+        </p>
+
         <p id="reg-error" class="hidden text-red-400 text-sm mb-4 bg-red-900/30 rounded-xl px-4 py-3"></p>
 
-        <!-- Submit -->
         <button
           id="btn-register"
           type="submit"
           disabled
           class="btn-primary w-full rounded-xl py-4 font-semibold text-base"
         >
-          Register
+          Continue
         </button>
-
       </form>
     </div>
   </main>
 
-  <!-- SUCCESS STATE (hidden initially) -->
+  <!-- SUCCESS -->
   <main id="view-success" class="hidden w-full max-w-md fade-in">
     <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
       <div class="flex items-center gap-3 mb-4">
@@ -162,13 +271,13 @@
           </svg>
         </div>
         <div>
-          <h2 class="text-white font-semibold text-lg">You're enrolled!</h2>
-          <p id="success-name" class="text-slate-400 text-sm"></p>
+          <h2 id="success-title" class="text-white font-semibold text-lg">You&apos;re enrolled!</h2>
+          <p id="success-line" class="text-slate-400 text-sm"></p>
         </div>
       </div>
 
       <div id="group-badge" class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 mb-5">
-        <p class="text-blue-300 text-xs font-medium uppercase tracking-wider mb-1">Your Group</p>
+        <p class="text-blue-300 text-xs font-medium uppercase tracking-wider mb-1">Your group</p>
         <p id="group-label" class="text-white font-mono text-sm"></p>
       </div>
 
@@ -191,16 +300,26 @@
     </div>
 
     <p class="text-slate-500 text-xs text-center mt-4">
-      Already registered?
-      <button id="btn-re-register" class="text-slate-400 underline">Register again with a different email</button>
+      Need a different email?
+      <button type="button" id="btn-re-register" class="text-slate-400 underline">Back to registration</button>
     </p>
   </main>
 
-  <!-- Spinner overlay -->
+  <!-- SCREEN-OUT -->
+  <main id="view-screenout" class="hidden w-full max-w-md fade-in">
+    <div class="bg-slate-800 rounded-2xl p-6 shadow-xl text-center">
+      <p id="screenout-title" class="text-white text-lg font-semibold mb-3"></p>
+      <p id="screenout-body" class="text-slate-400 text-sm leading-relaxed mb-6"></p>
+      <button type="button" id="btn-screenout-back" class="btn-outline w-full rounded-xl py-3 text-sm font-semibold text-slate-200 border-slate-500">
+        Back to form
+      </button>
+    </div>
+  </main>
+
   <div id="spinner" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
     <div class="bg-slate-800 rounded-2xl p-6 text-center">
       <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-      <p class="text-white text-sm">Registering...</p>
+      <p class="text-white text-sm">Submitting...</p>
     </div>
   </div>
 
@@ -208,20 +327,62 @@
   <script src="js/calendar.js"></script>
   <script>
   (function () {
-    // ---- DOM refs ----
-    var form       = document.getElementById('reg-form');
-    var fieldName  = document.getElementById('field-name');
-    var fieldEmail = document.getElementById('field-email');
-    var fieldDT    = document.getElementById('field-datetime');
-    var chkSafety  = document.getElementById('chk-safety');
-    var chkConsent = document.getElementById('chk-consent');
-    var btnReg     = document.getElementById('btn-register');
-    var errBox     = document.getElementById('reg-error');
-    var spinner    = document.getElementById('spinner');
-    var viewForm   = document.getElementById('view-form');
-    var viewSuc    = document.getElementById('view-success');
+    var CONTACT = (typeof EXPERIMENT_CONFIG !== 'undefined' && EXPERIMENT_CONFIG.researcherEmail)
+      ? EXPERIMENT_CONFIG.researcherEmail
+      : 'carlos.schrupp@berkeley.edu';
 
-    // ---- Set datetime min to 1 hour from now ----
+    document.getElementById('contact-line').textContent =
+      'Questions? Contact the researcher at ' + CONTACT + '.';
+
+    var form = document.getElementById('reg-form');
+    var fieldEmail = document.getElementById('field-email');
+    var fieldAge = document.getElementById('field-age');
+    var fieldName = document.getElementById('field-name');
+    var fieldDT = document.getElementById('field-datetime');
+    var chkBp = document.getElementById('chk-bp');
+    var chkConsent = document.getElementById('chk-consent');
+    var enrollmentExtra = document.getElementById('enrollment-extra');
+    var eligibilityHint = document.getElementById('eligibility-hint');
+    var btnReg = document.getElementById('btn-register');
+    var errBox = document.getElementById('reg-error');
+    var spinner = document.getElementById('spinner');
+    var viewForm = document.getElementById('view-form');
+    var viewSuc = document.getElementById('view-success');
+    var viewScreenout = document.getElementById('view-screenout');
+
+    function getInjury() {
+      var r = form.querySelector('input[name="injury"]:checked');
+      return r ? r.value : null;
+    }
+    function getAvail() {
+      var r = form.querySelector('input[name="avail"]:checked');
+      return r ? r.value : null;
+    }
+
+    function getGender() {
+      var r = form.querySelector('input[name="gender"]:checked');
+      return r ? r.value : null;
+    }
+
+    function isEligiblePath() {
+      return getInjury() === 'no' && getAvail() === 'yes';
+    }
+
+    function updateEnrollmentUI() {
+      var elig = isEligiblePath();
+      if (elig) {
+        enrollmentExtra.classList.remove('hidden');
+        eligibilityHint.classList.add('hidden');
+      } else {
+        enrollmentExtra.classList.add('hidden');
+        eligibilityHint.classList.remove('hidden');
+        fieldDT.value = '';
+        chkBp.checked = false;
+        chkConsent.checked = false;
+      }
+      checkReady();
+    }
+
     (function setDatetimeMin() {
       var min = new Date(Date.now() + 60 * 60 * 1000);
       var iso = new Date(min - min.getTimezoneOffset() * 60000)
@@ -229,31 +390,62 @@
       fieldDT.min = iso;
     })();
 
-    // ---- Enable submit only when all fields valid ----
     function checkReady() {
-      var ok = fieldName.value.trim() &&
-               fieldEmail.value.includes('@') &&
-               fieldDT.value &&
-               chkSafety.checked &&
-               chkConsent.checked;
+      var emailOk = fieldEmail.value.trim().indexOf('@') !== -1;
+      var ageVal = fieldAge.value.trim();
+      var ageOk = ageVal !== '' && !isNaN(parseInt(ageVal, 10));
+      var genderOk = getGender() !== null;
+      var inj = getInjury();
+      var av = getAvail();
+      var radiosOk = inj !== null && av !== null;
+
+      var ok = emailOk && ageOk && genderOk && radiosOk;
+
+      if (ok && isEligiblePath()) {
+        ok = fieldDT.value !== '' && chkBp.checked && chkConsent.checked;
+      }
+
       btnReg.disabled = !ok;
     }
-    [fieldName, fieldEmail, fieldDT, chkSafety, chkConsent].forEach(function (el) {
-      el.addEventListener('input', checkReady);
+
+    ['input', 'change'].forEach(function (evt) {
+      fieldEmail.addEventListener(evt, checkReady);
+      fieldAge.addEventListener(evt, checkReady);
+      fieldName.addEventListener(evt, checkReady);
+      fieldDT.addEventListener(evt, checkReady);
+      chkBp.addEventListener(evt, checkReady);
+      chkConsent.addEventListener(evt, checkReady);
+    });
+    form.querySelectorAll('input[name="gender"]').forEach(function (el) {
       el.addEventListener('change', checkReady);
     });
+    form.querySelectorAll('input[name="injury"], input[name="avail"]').forEach(function (el) {
+      el.addEventListener('change', function () {
+        updateEnrollmentUI();
+      });
+    });
 
-    // ---- Form submit ----
     form.addEventListener('submit', async function (e) {
       e.preventDefault();
       errBox.classList.add('hidden');
       spinner.classList.remove('hidden');
       btnReg.disabled = true;
 
+      var injuryUnsafe = getInjury() === 'yes';
+      var availability = getAvail() === 'yes';
+      var ageNum = parseInt(fieldAge.value.trim(), 10);
+
       var payload = {
         action: 'register',
-        name:   fieldName.value.trim(),
-        email:  fieldEmail.value.trim().toLowerCase(),
+        email: fieldEmail.value.trim().toLowerCase(),
+        name: fieldName.value.trim(),
+        age: ageNum,
+        gender: getGender(),
+        injuryUnsafe: injuryUnsafe,
+        availability: availability,
+        session1PlannedAt: isEligiblePath() ? fieldDT.value : '',
+        consentBp: chkBp.checked,
+        consentParticipate: chkConsent.checked,
       };
 
       try {
@@ -265,13 +457,51 @@
 
         if (data.error) throw new Error(data.error);
 
-        showSuccess({
-          name:      payload.name,
-          email:     payload.email,
-          groupIndex: data.groupIndex,
-          groupLabel: data.groupLabel,
-          scheduledDateTime: fieldDT.value,
-        });
+        if (data.enrollmentStatus === 'screened_out_injury') {
+          viewForm.classList.add('hidden');
+          viewScreenout.classList.remove('hidden');
+          document.getElementById('screenout-title').textContent = 'Not eligible at this time';
+          document.getElementById('screenout-body').textContent =
+            'For your safety, you should not enroll in this study online based on your answers. ' +
+            'If you have questions, contact ' + CONTACT + '.';
+          return;
+        }
+
+        if (data.enrollmentStatus === 'screened_out_availability') {
+          viewForm.classList.add('hidden');
+          viewScreenout.classList.remove('hidden');
+          document.getElementById('screenout-title').textContent = 'Scheduling does not fit this study';
+          document.getElementById('screenout-body').textContent =
+            'This study requires two short sessions within a specific time window. ' +
+            'Thank you for your interest. If you have questions, contact ' + CONTACT + '.';
+          return;
+        }
+
+        if (data.alreadyRegistered) {
+          showSuccess({
+            name: payload.name,
+            email: payload.email,
+            groupIndex: data.groupIndex,
+            groupLabel: data.groupLabel,
+            scheduledDateTime: fieldDT.value,
+            alreadyRegistered: true,
+          });
+          return;
+        }
+
+        if (data.enrolled) {
+          showSuccess({
+            name: payload.name,
+            email: payload.email,
+            groupIndex: data.groupIndex,
+            groupLabel: data.groupLabel,
+            scheduledDateTime: fieldDT.value,
+            alreadyRegistered: false,
+          });
+          return;
+        }
+
+        throw new Error('Unexpected response from server.');
       } catch (err) {
         errBox.textContent = 'Registration failed: ' + err.message +
           '. Please check your connection and try again.';
@@ -282,47 +512,59 @@
       }
     });
 
-    // ---- Show success view ----
-    function showSuccess({ name, email, groupIndex, groupLabel, scheduledDateTime }) {
+    function showSuccess(o) {
       viewForm.classList.add('hidden');
+      viewScreenout.classList.add('hidden');
       viewSuc.classList.remove('hidden');
       viewSuc.classList.add('fade-in');
 
-      document.getElementById('success-name').textContent = email;
+      document.getElementById('success-title').textContent =
+        o.alreadyRegistered ? 'Already registered' : 'You\'re enrolled!';
 
-      // Group info
+      var line = 'Registered as: ' + o.email;
+      if (o.name) line += ' (' + o.name + ')';
+      document.getElementById('success-line').textContent = line;
+
       var perms = EXPERIMENT_CONFIG.permutations;
       var tracks = EXPERIMENT_CONFIG.tracks;
-      var perm = perms[groupIndex];
+      var perm = perms[o.groupIndex];
       var labels = perm.map(function (id) {
-        var t = tracks.find(function (t) { return t.id === id; });
+        var t = tracks.find(function (x) { return x.id === id; });
         return t ? t.label : id;
       });
       document.getElementById('group-label').textContent =
-        'Session order: ' + labels.join(' → ');
+        'Session order (assigned audio): ' + labels.join(' → ');
 
-      // Scheduled time
-      var dt = new Date(scheduledDateTime);
+      var dt = new Date(o.scheduledDateTime);
       document.getElementById('session1-time').textContent = dt.toLocaleString([], {
         weekday: 'long', month: 'long', day: 'numeric',
         hour: '2-digit', minute: '2-digit',
       });
 
-      // Calendar links
       renderCalendarLinks(
         document.getElementById('calendar-links-container'),
-        { email: email, sessionNum: 1, scheduledDateTime: scheduledDateTime }
+        { email: o.email, sessionNum: 1, scheduledDateTime: o.scheduledDateTime }
       );
     }
 
-    // ---- Re-register button ----
     document.getElementById('btn-re-register').addEventListener('click', function () {
       viewSuc.classList.add('hidden');
       viewForm.classList.remove('hidden');
       viewForm.classList.add('fade-in');
       form.reset();
+      updateEnrollmentUI();
       btnReg.disabled = true;
     });
+
+    document.getElementById('btn-screenout-back').addEventListener('click', function () {
+      viewScreenout.classList.add('hidden');
+      viewForm.classList.remove('hidden');
+      viewForm.classList.add('fade-in');
+      btnReg.disabled = false;
+      checkReady();
+    });
+
+    updateEnrollmentUI();
   })();
   </script>
 </body>

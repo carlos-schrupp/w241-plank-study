@@ -39,14 +39,17 @@ This manual has two parts: **Researcher setup** (one-time configuration and depl
 
 ### Step 4: Verify
 
-1. Open the registration page, enter a test name and email, pick a time, accept checkboxes, and submit. You should see a success message and calendar links.
+1. Open the registration page. Complete **email**, **age**, **gender** (Male / Female / Other), optional name, eligibility (injury / availability), then if eligible **Session 1** time and both consent checkboxes. Submit. You should see success (or a screen-out message if ineligible) and calendar links when enrolled.
 2. Use one of the calendar links (or build the session URL by hand with that email and `session=1`). Complete the flow through one session: safety, instructions, audio, pre-task questions, plank (start/stop), post-task questions, submit. Check that a row appears in the **sessions** sheet and, if you enabled photo capture, that an image appears in the Drive folder.
 3. Run a quick test on a phone (same browser you intend participants to use) to confirm layout and that the timer and camera (if used) work.
 
 ### Where the data lives
 
-- **Google Sheet**: Tabs **participants** (one row per person, group, sessions completed) and **sessions** (one row per completed session: duration, pre/post answers, contact sheet URL). You can export to CSV or use the Sheets API for R/Python.
-- **Google Drive folder**: One JPEG per session where the participant enabled “form verification camera”; file name includes email and session number.
+- **Google Sheet**:
+  - **participants** — one row per **enrolled** person: includes `email`, `age`, `gender`, group assignment, `sessions_completed`.
+  - **registration_attempts** — one row per **registration submit** (enrolled, screen-outs, duplicate email); use for screening statistics.
+  - **sessions** — one row per completed session: duration, pre/post answer JSON, contact sheet URL.
+- **Google Drive folder**: One JPEG contact sheet per session where the participant enabled form verification; file name includes email and session number.
 
 ### Changing questions or sessions
 
@@ -63,7 +66,7 @@ Share the following (or a shortened version) with participants. You can adapt th
 
 ### Before you start
 
-- You will do **two sessions** (or three, if your researcher specified). Each session is a single forearm plank while listening to an assigned music track. Sessions are on different days, 24–72 hours apart.
+- You will do **two sessions** (or three, if your researcher specified). Each session is a single forearm plank while listening to **assigned audio** (the study examines music and performance; the app labels conditions neutrally as e.g. Audio A / Audio B). Sessions are on different days, 24–72 hours apart.
 - You need: a phone or tablet (with browser and optional camera for form verification), headphones (recommended), a comfortable surface (e.g. exercise mat), and a few minutes of quiet space per session.
 - **Safety**: Planks can temporarily raise blood pressure. If you have hypertension or are injured, check with your doctor before participating. Do not do intense core exercise in the 24 hours before a session.
 
@@ -71,15 +74,13 @@ Share the following (or a shortened version) with participants. You can adapt th
 
 ### Registration (do once)
 
-1. Open the **registration link** provided by the researcher (e.g. the study homepage).
-2. Enter your **full name** and **email**. Use the same email for all sessions so your data can be matched.
-3. Choose a **date and time** for your first session. Pick a moment when you have space and comfortable clothing.
-4. Read and check the **safety and consent** boxes.
-5. Click **Register**.
-6. You will see a confirmation and your **group** (e.g. which music order you have). Add the session to your calendar:
+1. Open the **registration link** (e.g. study homepage). The study is titled **Physical Performance Study**.
+2. Read the study information on the page. Enter your **email** (required for all sessions), **age**, and **gender** (Male, Female, or Other). **Full name** is optional. Answer the **injury** and **scheduling availability** questions honestly. If you are eligible, choose a **date and time** for Session 1 and check the **blood pressure** and **participation/consent** boxes.
+3. Tap **Continue** to submit. If you are not eligible, you will see a short message (your response may still be logged for research statistics). If you enroll successfully, you will see your **group** / **session order (assigned audio)** and Session 1 time.
+4. Add the session to your calendar:
    - **Add to Google Calendar**: opens Google Calendar with the event pre-filled; the event description contains the link to open when it’s time.
    - **Download for Apple / Outlook Calendar**: downloads a file you can open to add the event; the description again has the session link.
-7. **Important**: When it’s time for your session, open the **link from the calendar event** (or the link the researcher sent). That link will take you to the right session and pre-fill your email.
+5. **Important**: When it’s time for your session, open the **link from the calendar event** (or the link the researcher sent). That link opens the correct session and pre-fills your email.
 
 ---
 
@@ -87,13 +88,14 @@ Share the following (or a shortened version) with participants. You can adapt th
 
 1. **Before you start**: No intense core work in the last 24 hours. Have comfortable clothes, a mat or soft surface, and enough space for a forearm plank. Headphones are recommended.
 2. Open the **session link** from your calendar (or the link from the researcher). The page will show “Session X of 2” (or 3).
-3. **Step 1 — Before you begin**: Confirm the email shown is yours. Check the three safety/readiness boxes and tap **Continue**.
+3. **Step 1 — Before you begin**: Confirm the email shown is yours. Read the **Important** note about using the **same email** you used when you registered (for Session 2, the text also mentions having completed Session 1). Check the three safety/readiness boxes and tap **Continue**.
 4. **Step 2 — Instructions**: Read the short plank instructions (position, form, when to stop). Tap **I understand — Continue**.
-5. **Step 3 — Audio**: The page will load today’s music track. Set volume to a comfortable level (around 60%). Optionally turn on “form verification camera” if you want to help with quality control (one photo per second, combined into a single image). Tap **Music is playing — Continue**.
-6. **Step 4 — Quick questions**: Answer a few short questions while the music plays. When done, tap **I’m ready — Start plank**.
-7. **Step 5 — Plank**: Put your device where you can see it (e.g. on the floor in front of you). When ready, get into plank position, then tap **START**. The timer will run and the music will keep playing. Hold the plank as long as you can with good form. When you stop, tap **STOP** immediately. Do not pause or restart the timer.
-8. **Step 6 — Post-session questions**: Your time is shown. Answer the follow-up questions and tap **Submit session data**.
-9. **After submit**: If you have more sessions to do, the page will ask you to **schedule the next session** (24–72 hours from now). Use the calendar links again and open the new link when it’s time. If you’ve completed all sessions, you’ll see a “Study complete” message.
+5. **Session 1 only — About your activity**: Answer three short questions (activity level, optional activity type, plank frequency). Tap **Continue to audio**. *(Omitted in Session 2.)*
+6. **Audio**: The page will load **this session’s assigned audio**. Set volume to a comfortable level (around 60%). Optionally turn on “form verification camera” if you want to help with quality control (one photo per second, combined into a single image). Tap **Audio is playing — Continue**.
+7. **Quick questions**: Answer the questions while **this session’s audio** plays. When done, tap **I’m ready — Start plank**.
+8. **Plank**: Put your device where you can see it (e.g. on the floor in front of you). When ready, get into plank position, then tap **START**. The timer will run and **the audio** will keep playing. Hold the plank as long as you can with good form. When you stop, tap **STOP** immediately. Do not pause or restart the timer.
+9. **Post-session questions**: Your time is shown. Answer the follow-up questions (Session 2 includes a few extra study-experience questions) and tap **Submit session data**.
+10. **After submit**: If you have more sessions to do, the page will ask you to **schedule the next session** (24–72 hours from now). Use the calendar links again and open the new link when it’s time. If you’ve completed all sessions, you’ll see a “Study complete” message.
 
 ---
 
@@ -101,7 +103,7 @@ Share the following (or a shortened version) with participants. You can adapt th
 
 - Use the **same email** for every session so the system can match your data.
 - Open the session link **at the time you scheduled** (or when you’re ready that day). The link in the calendar event is the one you need.
-- If the music doesn’t auto-play, tap the “Music is playing — Continue” button; that often allows playback to start on phones.
+- If the audio doesn’t auto-play, tap the “Audio is playing — Continue” button; that often allows playback to start on phones.
 - Keep the screen on and avoid locking the device during the plank so the timer stays visible.
 
 ---
@@ -110,7 +112,7 @@ Share the following (or a shortened version) with participants. You can adapt th
 
 - **“Email not found”**: Register first using the main registration link; then use the session link from your calendar.
 - **“Please complete Session X first”**: Complete sessions in order (1, then 2, then 3 if applicable). Use the link for the next session from the “Schedule next session” step.
-- **Music or timer not working**: Try a different browser (e.g. Chrome or Safari). Ensure you’ve allowed the page to play media if the browser asks.
+- **Audio or timer not working**: Try a different browser (e.g. Chrome or Safari). Ensure you’ve allowed the page to play media if the browser asks.
 - **Camera**: Form verification is optional. If you don’t enable it or permission is denied, you can still complete the session.
 
 If something still doesn’t work, contact the researcher with your email and what step you were on.

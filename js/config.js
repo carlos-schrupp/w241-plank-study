@@ -9,74 +9,157 @@ const EXPERIMENT_CONFIG = {
   // Replace with your deployed Apps Script Web App URL after setup
   apiUrl: 'https://script.google.com/macros/s/AKfycbxgfrOf6b98lyPs1sjtmTeNdeCeBO9beK0O1mv_JICQn2Q_oe5AnI--oam9AnWBEczc/exec',
 
-  studyTitle: 'Plank Exercise & Music Study',
+  studyTitle: 'Physical Performance Study',
   experimentId: '0001',
+  researcherEmail: 'carlos.schrupp@berkeley.edu',
 
   // ---- Session design ----
   numSessions: 2, // change to 3 when/if needed
 
   // Audio tracks — order determines Latin-square columns.
   // Add a third track object here if numSessions = 3.
+  // Labels are shown to participants (neutral — avoid genre/tempo/mood cues).
   tracks: [
     {
       id: 'pop',
-      label: 'Pop 70 BPM',
+      label: 'Audio A',
       youtubeId: 'x8WbHWwZixk',
     },
     {
       id: 'trance',
-      label: 'Uplifting Trance',
+      label: 'Audio B',
       youtubeId: 'iXAbte4QXKs',
     },
   ],
 
-  // ---- Pre-task questions (shown while music plays, before plank) ----
-  // Target: completable in ~60 seconds
-  // Supported types: 'scale' | 'radio' | 'textarea'
-  preTasks: [
+  // ---- Session 1 only: after instructions, before audio (legacy activity block) ----
+  session1Activity: [
     {
-      id: 'motivation',
-      text: 'How motivated are you to exercise right now?',
-      type: 'scale',
-      min: 1,
-      max: 5,
-      minLabel: 'Not at all',
-      maxLabel: 'Very motivated',
+      id: 'activity_level',
+      text: 'Are you a regular gym-goer or physically active?',
+      type: 'radio',
+      options: [
+        'Yes, regularly (≥ 3 times per week)',
+        'Occasionally (1–2 times per week)',
+        'No, rarely or never',
+      ],
     },
     {
-      id: 'physical_feeling',
-      text: 'How are you feeling physically right now?',
+      id: 'activity_type',
+      text: 'What type of physical activity do you usually do?',
+      type: 'textarea',
+      required: false,
+      placeholder: 'Optional',
+    },
+    {
+      id: 'plank_frequency',
+      text: 'Do you regularly perform planks?',
+      type: 'radio',
+      options: [
+        'Yes, regularly (≥ 3 times per week)',
+        'Occasionally (1–2 times per week)',
+        'No, rarely or never',
+      ],
+    },
+  ],
+
+  // ---- Pre-task questions (shown while audio plays, before plank) — legacy 1–7 + liking ----
+  preTasks: [
+    {
+      id: 'energy_pre_plank',
+      text: 'After the assigned audio began, but before you started the plank, how physically energized did you feel?',
       type: 'scale',
       min: 1,
-      max: 5,
-      minLabel: 'Poor',
-      maxLabel: 'Great',
+      max: 7,
+      minLabel: 'Extremely low energy',
+      maxLabel: 'Extremely high energy',
+    },
+    {
+      id: 'motivation_pre_plank',
+      text: 'After the assigned audio began, but before you started the plank, how motivated were you to perform well on the task?',
+      type: 'scale',
+      min: 1,
+      max: 7,
+      minLabel: 'Not at all motivated',
+      maxLabel: 'Extremely motivated',
     },
     {
       id: 'music_liking',
-      text: "How much do you like today's music so far?",
+      text: 'How much do you like this session\'s audio so far?',
       type: 'scale',
       min: 1,
-      max: 5,
+      max: 7,
       minLabel: 'Strongly dislike',
       maxLabel: 'Love it',
     },
   ],
 
-  // ---- Post-task questions (shown immediately after stopping the timer) ----
-  postTasks: [
+  // ---- Post-task: part 1 (all sessions) ----
+  postTasksPart1: [
     {
       id: 'rpe',
-      text: 'Rate your perceived exertion (1 = very easy, 10 = maximum effort)',
+      text: 'Immediately after completing the plank, how hard did the exercise feel overall? (0 = no exertion at all; 5 = somewhat hard; 10 = maximal exertion — the hardest effort you could sustain.)',
+      type: 'scale',
+      min: 0,
+      max: 10,
+      minLabel: 'No exertion at all',
+      maxLabel: 'Maximal exertion',
+    },
+    {
+      id: 'headphones',
+      text: 'Did you use headphones during the plank exercise?',
+      type: 'radio',
+      options: ['Yes', 'No'],
+    },
+    {
+      id: 'plank_pause',
+      text: 'Did you pause or restart the plank at any point?',
+      type: 'radio',
+      options: ['Yes', 'No'],
+    },
+    {
+      id: 'plank_pause_detail',
+      text: 'If yes, please briefly describe what happened',
+      type: 'textarea',
+      required: true,
+      showIf: { questionId: 'plank_pause', equals: 'Yes' },
+      placeholder: 'Describe briefly…',
+    },
+  ],
+
+  // ---- Post-task: Session 2 only (after pause items, per session2_survey_final_draft) ----
+  postTasksSession2Extra: [
+    {
+      id: 'instructions_ease',
+      text: 'How easy was it for you to follow the instructions provided in the study website (including the plank and audio steps)?',
       type: 'scale',
       min: 1,
-      max: 10,
-      minLabel: 'Very easy',
-      maxLabel: 'Max effort',
+      max: 5,
+      minLabel: 'Very difficult',
+      maxLabel: 'Very easy',
+    },
+    {
+      id: 'overall_experience',
+      text: 'How would you rate your overall experience participating in this study?',
+      type: 'scale',
+      min: 1,
+      max: 5,
+      minLabel: 'Very negative',
+      maxLabel: 'Very positive',
+    },
+  ],
+
+  // ---- Post-task: remainder (all sessions), comments added in JS (wording differs S1 vs S2) ----
+  postTasksPart2: [
+    {
+      id: 'volume_clear',
+      text: 'Were the audio volume instructions clear?',
+      type: 'radio',
+      options: ['Yes', 'Somewhat', 'No'],
     },
     {
       id: 'music_effect',
-      text: 'How did the music affect your plank performance?',
+      text: 'How did this session\'s audio affect your plank performance?',
       type: 'scale',
       min: 1,
       max: 5,
@@ -92,12 +175,6 @@ const EXPERIMENT_CONFIG = {
         'Mostly good — minor breaks corrected',
         'Form failed — I stopped due to form breakdown',
       ],
-    },
-    {
-      id: 'comments',
-      text: 'Any comments about this session? (optional)',
-      type: 'textarea',
-      required: false,
     },
   ],
 };

@@ -31,6 +31,10 @@ var S = {
   // Survey answers
   preTasks:  {},
   postTasks: {},
+  session1Activity: {},
+
+  /** @type {object[]|null} post-task schema for current session (set in setupPostTaskStep) */
+  postTaskQuestionList: null,
 
   // Submission results
   sessionId:     null,
@@ -39,17 +43,36 @@ var S = {
 
 // ---- Step IDs in order (for progress bar) ----
 var STEPS = [
-  'loading', 'error', 'safety', 'instructions',
+  'loading', 'error', 'safety', 'instructions', 'session1-activity',
   'audio', 'pre-task', 'plank', 'post-task',
   'submitting', 'schedule', 'complete',
 ];
-var PROGRESS_STEPS = ['safety', 'instructions', 'audio', 'pre-task', 'plank', 'post-task'];
+
+function getProgressSteps() {
+  var steps = ['safety', 'instructions'];
+  if (typeof S !== 'undefined' && S.sessionNum === 1) {
+    steps.push('session1-activity');
+  }
+  steps.push('audio', 'pre-task', 'plank', 'post-task');
+  return steps;
+}
 
 // =============================================================
 // DOM helpers
 // =============================================================
 
 function $(id) { return document.getElementById(id); }
+
+function refreshMainStepBanner(stepName) {
+  var el = $('step-' + stepName);
+  if (!el) return;
+  var b = el.querySelector('.js-step-banner');
+  if (!b) return;
+  var steps = getProgressSteps();
+  var idx = steps.indexOf(stepName);
+  if (idx < 0) return;
+  b.textContent = 'Step ' + (idx + 1) + ' of ' + steps.length;
+}
 
 function showStep(name) {
   STEPS.forEach(function (s) {
@@ -62,9 +85,20 @@ function showStep(name) {
     target.classList.add('fade-in');
   }
   // Progress bar
-  var idx = PROGRESS_STEPS.indexOf(name);
-  var pct = idx < 0 ? 0 : Math.round(((idx + 1) / PROGRESS_STEPS.length) * 100);
+  var progressSteps = getProgressSteps();
+  var idx = progressSteps.indexOf(name);
+  var pct;
+  if (idx >= 0) {
+    pct = Math.round(((idx + 1) / progressSteps.length) * 100);
+  } else if (name === 'submitting' || name === 'schedule' || name === 'complete') {
+    pct = 100;
+  } else {
+    pct = 0;
+  }
   $('progress-fill').style.width = pct + '%';
+
+  refreshMainStepBanner(name);
+
   // Scroll to top
   window.scrollTo({ top: 0 });
 }
@@ -290,9 +324,37 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
   var container = $(containerId);
   container.innerHTML = '';
 
+  function applyConditionalVisibility() {
+    questions.forEach(function (q) {
+      if (!q.showIf) return;
+      var wrap = container.querySelector('[data-qid="' + q.id + '"]');
+      if (!wrap) return;
+      var show = answersObj[q.showIf.questionId] === q.showIf.equals;
+      wrap.style.display = show ? '' : 'none';
+      if (!show) {
+        delete answersObj[q.id];
+        var ta = wrap.querySelector('textarea');
+        if (ta) ta.value = '';
+        wrap.querySelectorAll('.scale-btn.selected, .radio-btn.selected').forEach(function (b) {
+          b.classList.remove('selected');
+        });
+      }
+    });
+  }
+
+  function bump() {
+    applyConditionalVisibility();
+    if (onChangeCallback) onChangeCallback();
+  }
+
   questions.forEach(function (q) {
     var wrapper = document.createElement('div');
     wrapper.className = 'bg-slate-800 rounded-2xl p-4';
+    wrapper.dataset.qid = q.id;
+    if (q.showIf) {
+      wrapper.style.display =
+        answersObj[q.showIf.questionId] === q.showIf.equals ? '' : 'none';
+    }
 
     var label = document.createElement('p');
     label.className = 'text-white text-sm font-medium mb-3 leading-snug';
@@ -301,7 +363,7 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
 
     if (q.type === 'scale') {
       var row = document.createElement('div');
-      row.className = 'flex gap-1 mb-2';
+      row.className = 'flex gap-1 mb-2 flex-wrap';
       for (var v = q.min; v <= q.max; v++) {
         (function (val) {
           var btn = document.createElement('button');
@@ -309,22 +371,23 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
           btn.className = 'scale-btn';
           btn.textContent = val;
           btn.dataset.value = val;
+          if (answersObj[q.id] === val) btn.classList.add('selected');
           btn.addEventListener('click', function () {
             row.querySelectorAll('.scale-btn').forEach(function (b) {
               b.classList.remove('selected');
             });
             btn.classList.add('selected');
             answersObj[q.id] = val;
-            if (onChangeCallback) onChangeCallback();
+            bump();
           });
           row.appendChild(btn);
         })(v);
       }
-      var labels = document.createElement('div');
-      labels.className = 'flex justify-between text-xs text-slate-500 mt-1';
-      labels.innerHTML = '<span>' + q.minLabel + '</span><span>' + q.maxLabel + '</span>';
+      var labRow = document.createElement('div');
+      labRow.className = 'flex justify-between text-xs text-slate-500 mt-1 gap-2';
+      labRow.innerHTML = '<span>' + q.minLabel + '</span><span>' + q.maxLabel + '</span>';
       wrapper.appendChild(row);
-      wrapper.appendChild(labels);
+      wrapper.appendChild(labRow);
 
     } else if (q.type === 'radio') {
       var optList = document.createElement('div');
@@ -333,6 +396,7 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'radio-btn';
+        if (answersObj[q.id] === opt) btn.classList.add('selected');
         btn.textContent = opt;
         btn.addEventListener('click', function () {
           optList.querySelectorAll('.radio-btn').forEach(function (b) {
@@ -340,7 +404,7 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
           });
           btn.classList.add('selected');
           answersObj[q.id] = opt;
-          if (onChangeCallback) onChangeCallback();
+          bump();
         });
         optList.appendChild(btn);
       });
@@ -349,26 +413,63 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
     } else if (q.type === 'textarea') {
       var ta = document.createElement('textarea');
       ta.rows = 3;
-      ta.placeholder = 'Optional — leave blank to skip';
+      ta.placeholder =
+        q.placeholder !== undefined && q.placeholder !== null
+          ? q.placeholder
+          : 'Optional — leave blank to skip';
+      if (answersObj[q.id]) ta.value = answersObj[q.id];
       ta.className = 'w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500 ' +
         'rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-blue-500';
       ta.addEventListener('input', function () {
         answersObj[q.id] = ta.value;
-        if (onChangeCallback) onChangeCallback();
+        bump();
       });
       wrapper.appendChild(ta);
     }
 
     container.appendChild(wrapper);
   });
+
+  applyConditionalVisibility();
 }
 
 function allAnswered(questions, answersObj) {
   return questions.every(function (q) {
+    if (q.showIf) {
+      var parentVal = answersObj[q.showIf.questionId];
+      if (parentVal !== q.showIf.equals) return true;
+    }
     if (q.required === false) return true;
     var val = answersObj[q.id];
-    return val !== undefined && val !== null && val !== '';
+    if (val === undefined || val === null) return false;
+    if (typeof val === 'string' && val.trim() === '') return false;
+    return true;
   });
+}
+
+function buildPostTasksForSession(sessionNum) {
+  var list = EXPERIMENT_CONFIG.postTasksPart1.map(function (t) {
+    return JSON.parse(JSON.stringify(t));
+  });
+  if (sessionNum === 2) {
+    EXPERIMENT_CONFIG.postTasksSession2Extra.forEach(function (t) {
+      list.push(JSON.parse(JSON.stringify(t)));
+    });
+  }
+  EXPERIMENT_CONFIG.postTasksPart2.forEach(function (t) {
+    list.push(JSON.parse(JSON.stringify(t)));
+  });
+  var commentText =
+    sessionNum === 2
+      ? 'Do you have any comments or suggestions about your experience in this study? (optional)'
+      : 'Any other comments about this session? (optional)';
+  list.push({
+    id: 'comments',
+    text: commentText,
+    type: 'textarea',
+    required: false,
+  });
+  return list;
 }
 
 // =============================================================
@@ -461,6 +562,23 @@ function setupSafetyStep() {
   $('safety-session-label').textContent =
     'Session ' + S.sessionNum + ' of ' + EXPERIMENT_CONFIG.numSessions;
 
+  var reminderEl = $('safety-email-reminder');
+  var reminderText;
+  if (S.sessionNum === 1) {
+    reminderText =
+      'Important: Use the same email address you used when you registered ' +
+      '(your session link should already match your account).';
+  } else if (S.sessionNum === 2) {
+    reminderText =
+      'Important: Use the same email address you used when you registered and completed Session 1 ' +
+      '(your session link should already match your account).';
+  } else {
+    reminderText =
+      'Important: Use the same email address you used when you registered and for each previous session ' +
+      '(your session link should already match your account).';
+  }
+  reminderEl.textContent = reminderText;
+
   var checks = ['chk-no-injury', 'chk-no-bp', 'chk-space'];
   function checkAll() {
     var allChecked = checks.every(function (id) { return $(id).checked; });
@@ -480,9 +598,40 @@ function setupSafetyStep() {
 
 function setupInstructionsStep() {
   $('btn-instructions-next').addEventListener('click', function () {
+    if (S.sessionNum === 1) {
+      showStep('session1-activity');
+      setupSession1ActivityStep();
+    } else {
+      showStep('audio');
+      setupAudioStep();
+    }
+  });
+}
+
+// =============================================================
+// Step 2b: Session 1 only — activity background
+// =============================================================
+
+function setupSession1ActivityStep() {
+  S.session1Activity = {};
+  renderQuestions(
+    EXPERIMENT_CONFIG.session1Activity,
+    'session1-activity-form',
+    S.session1Activity,
+    checkSession1ActivityComplete
+  );
+
+  $('btn-session1-activity-next').addEventListener('click', function () {
     showStep('audio');
     setupAudioStep();
   });
+
+  checkSession1ActivityComplete();
+}
+
+function checkSession1ActivityComplete() {
+  $('btn-session1-activity-next').disabled =
+    !allAnswered(EXPERIMENT_CONFIG.session1Activity, S.session1Activity);
 }
 
 // =============================================================
@@ -490,7 +639,8 @@ function setupInstructionsStep() {
 // =============================================================
 
 function setupAudioStep() {
-  $('audio-track-label').textContent = 'Today\'s track: ' + S.track.label;
+  $('audio-track-label').textContent =
+    'Assigned audio for this session: ' + S.track.label;
 
   var fallbackEl = $('audio-fallback-link');
   var ytUrl = 'https://youtu.be/' + S.track.youtubeId;
@@ -574,6 +724,8 @@ function setupPreTaskStep() {
     showStep('plank');
     setupPlankStep();
   });
+
+  checkPreTaskComplete();
 }
 
 function checkPreTaskComplete() {
@@ -626,19 +778,23 @@ function setupPostTaskStep(totalSec) {
   var display = formatTime(S.elapsedMs);
   $('plank-time-display').textContent = display;
 
+  S.postTasks = {};
+  S.postTaskQuestionList = buildPostTasksForSession(S.sessionNum);
   renderQuestions(
-    EXPERIMENT_CONFIG.postTasks,
+    S.postTaskQuestionList,
     'post-task-form',
     S.postTasks,
     checkPostTaskComplete
   );
 
   $('btn-submit').addEventListener('click', submitSession.bind(null, totalSec));
+
+  checkPostTaskComplete();
 }
 
 function checkPostTaskComplete() {
-  $('btn-submit').disabled =
-    !allAnswered(EXPERIMENT_CONFIG.postTasks, S.postTasks);
+  var list = S.postTaskQuestionList || [];
+  $('btn-submit').disabled = !allAnswered(list, S.postTasks);
 }
 
 // =============================================================
@@ -650,6 +806,11 @@ async function submitSession(totalSec) {
   showStep('submitting');
   $('submitting-note').textContent = 'Submitting session data...';
 
+  var preTasksPayload =
+    S.sessionNum === 1
+      ? Object.assign({}, S.session1Activity || {}, S.preTasks)
+      : Object.assign({}, S.preTasks);
+
   // 1. Submit core session data
   try {
     var sessionRes = await apiPost({
@@ -658,7 +819,7 @@ async function submitSession(totalSec) {
       sessionNum:      S.sessionNum,
       audioTrack:      S.track.id,
       plankDurationSec: parseFloat(totalSec.toFixed(3)),
-      preTasks:        S.preTasks,
+      preTasks:        preTasksPayload,
       postTasks:       S.postTasks,
     });
 
