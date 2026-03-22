@@ -39,6 +39,7 @@ var S = {
   // Submission results
   sessionId:     null,
   sessionsCompleted: 0,
+  nextSessionScheduledAt: null,
 };
 
 // ---- Step IDs in order (for progress bar) ----
@@ -478,6 +479,8 @@ function buildPostTasksForSession(sessionNum) {
 
 function setupNextSessionPicker(sessionNum) {
   var input = $('next-session-dt');
+  var emailToggle = $('chk-next-email-link');
+  var btn = $('btn-save-next-session');
   var now = new Date();
   var minDt = new Date(now.getTime() + 24 * 3600 * 1000);
   var maxDt = new Date(now.getTime() + 72 * 3600 * 1000);
@@ -487,14 +490,96 @@ function setupNextSessionPicker(sessionNum) {
   }
   input.min = toLocal(minDt);
   input.max = toLocal(maxDt);
+  input.value = '';
+  emailToggle.checked = !!S.participant.emailOptIn;
+  btn.disabled = true;
+  $('schedule-error').classList.add('hidden');
+  $('next-link-container').innerHTML = '';
+  $('next-calendar-links').innerHTML = '';
+  $('next-email-status').className = 'hidden text-xs rounded-xl px-4 py-3 mb-4';
 
-  input.addEventListener('change', function () {
-    if (!input.value) return;
+  input.onchange = function () {
+    $('schedule-error').classList.add('hidden');
+    $('next-link-container').innerHTML = '';
+    $('next-calendar-links').innerHTML = '';
+    $('next-email-status').className = 'hidden text-xs rounded-xl px-4 py-3 mb-4';
+    btn.disabled = !input.value;
+  };
+
+  btn.onclick = function () {
+    saveNextSessionSchedule(sessionNum);
+  };
+}
+
+async function saveNextSessionSchedule(nextSessionNum) {
+  var input = $('next-session-dt');
+  var emailToggle = $('chk-next-email-link');
+  var btn = $('btn-save-next-session');
+  var err = $('schedule-error');
+  var emailStatus = $('next-email-status');
+  var scheduledAt = localDateTimeValueToIso(input.value);
+  var scheduledLabel = scheduledAt ? formatStudyDateTime(scheduledAt) : '';
+
+  if (!scheduledAt) {
+    err.textContent = 'Please choose a valid date and time for Session ' + nextSessionNum + '.';
+    err.classList.remove('hidden');
+    return;
+  }
+
+  err.classList.add('hidden');
+  emailStatus.className = 'hidden text-xs rounded-xl px-4 py-3 mb-4';
+  btn.disabled = true;
+  btn.textContent = 'Saving Session ' + nextSessionNum + '...';
+
+  try {
+    var res = await apiPost({
+      action: 'schedule_next_session',
+      email: S.email,
+      nextSessionNum: nextSessionNum,
+      scheduledAt: scheduledAt,
+      scheduledLabel: scheduledLabel,
+      emailOptIn: emailToggle.checked,
+      contactEmail: EXPERIMENT_CONFIG.researcherEmail,
+    });
+
+    if (res.error) throw new Error(res.error);
+
+    S.participant['session' + nextSessionNum + 'PlannedAt'] = res.scheduledAt;
+    S.participant.emailOptIn = res.emailOptIn;
+    S.nextSessionScheduledAt = res.scheduledAt;
+    $('schedule-note').textContent =
+      'Session ' + nextSessionNum + ' is scheduled. Save the link below and use it when it is time.';
+
+    renderDirectSessionLink(
+      $('next-link-container'),
+      {
+        email: S.email,
+        sessionNum: nextSessionNum,
+        buttonLabel: 'Open Session ' + nextSessionNum,
+        note: 'You can use this link directly if your calendar reminder fails.',
+      }
+    );
     renderCalendarLinks(
       $('next-calendar-links'),
-      { email: S.email, sessionNum: sessionNum, scheduledDateTime: input.value }
+      { email: S.email, sessionNum: nextSessionNum, scheduledDateTime: res.scheduledAt }
     );
-  });
+
+    if (res.emailSent) {
+      emailStatus.textContent = 'We sent your Session ' + nextSessionNum + ' link to ' + S.email + '.';
+      emailStatus.classList.remove('hidden');
+      emailStatus.classList.add('bg-emerald-500/10', 'text-emerald-200', 'border', 'border-emerald-500/30');
+    } else if (emailToggle.checked && res.emailError) {
+      emailStatus.textContent = 'We could not send the email, but your direct link is shown below.';
+      emailStatus.classList.remove('hidden');
+      emailStatus.classList.add('bg-amber-500/10', 'text-amber-200', 'border', 'border-amber-500/30');
+    }
+  } catch (e) {
+    err.textContent = 'Could not save Session ' + nextSessionNum + ': ' + e.message;
+    err.classList.remove('hidden');
+  } finally {
+    btn.disabled = !input.value;
+    btn.textContent = 'Confirm Session ' + nextSessionNum + ' schedule';
+  }
 }
 
 // =============================================================
@@ -842,6 +927,7 @@ async function submitSession(totalSec) {
     if (sessionRes.error) throw new Error(sessionRes.error);
     S.sessionId = sessionRes.sessionId;
     S.sessionsCompleted = sessionRes.sessionsCompleted;
+    S.participant.sessionsCompleted = sessionRes.sessionsCompleted;
   } catch (e) {
     showStep('post-task');
     $('submit-error').textContent = 'Submission failed: ' + e.message + '. Please try again.';
@@ -887,6 +973,8 @@ function showScheduleStep() {
   $('schedule-note').textContent =
     'Now schedule Session ' + nextNum + ' (24 – 72 hours from now).';
   $('next-session-num').textContent = nextNum;
+  $('next-session-email-num').textContent = nextNum;
+  $('next-session-btn-num').textContent = nextNum;
   setupNextSessionPicker(nextNum);
   showStep('schedule');
 }

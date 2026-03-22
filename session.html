@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
-  <title>Plank Study — Session</title>
+  <title>Physical Performance Study — Session</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -461,8 +461,23 @@
         <input id="next-session-dt" type="datetime-local"
           class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-3 text-sm
                  focus:outline-none focus:border-blue-500" />
+        <label class="flex items-start gap-3 mt-4 cursor-pointer">
+          <input type="checkbox" id="chk-next-email-link" class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0" />
+          <span class="text-slate-400 text-sm leading-relaxed">
+            Get my <strong class="text-slate-300">Session <span id="next-session-email-num"></span> link</strong> in my email.
+          </span>
+        </label>
       </div>
 
+      <p id="schedule-error" class="hidden text-red-400 text-sm bg-red-900/30 rounded-xl px-4 py-3 mb-4"></p>
+
+      <button id="btn-save-next-session" disabled
+        class="btn-primary w-full rounded-xl py-4 font-semibold text-base mb-4">
+        Confirm Session <span id="next-session-btn-num"></span> schedule
+      </button>
+
+      <div id="next-link-container" class="mb-4"></div>
+      <p id="next-email-status" class="hidden text-xs rounded-xl px-4 py-3 mb-4"></p>
       <div id="next-calendar-links" class="mb-4"></div>
 
       <div class="bg-slate-800 rounded-xl p-4 text-sm text-slate-400">
@@ -485,7 +500,13 @@
         <p class="text-slate-400 text-sm mb-1">
           You have completed all sessions. Thank you for participating!
         </p>
-        <p class="text-slate-500 text-xs">Experiment ID: 0001</p>
+        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mt-5 text-left">
+          <p class="text-emerald-300 text-sm font-medium mb-1">Raffle entry confirmed</p>
+          <p class="text-emerald-200/90 text-sm leading-relaxed">
+            Because you completed both sessions, you have been entered into the raffle for gift cards:
+            one $100 gift card, one $50 gift card, and two $25 gift cards.
+          </p>
+        </div>
       </div>
     </section>
 

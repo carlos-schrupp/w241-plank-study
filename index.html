@@ -46,12 +46,11 @@
 
   <header class="w-full max-w-md mb-6 text-center">
     <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">
-      UC Berkeley MIDS — W241
+      UC Berkeley student research study
     </p>
     <h1 class="text-white text-2xl font-bold leading-tight">
       Physical Performance Study
     </h1>
-    <p class="text-slate-400 text-sm mt-1">Experiment ID: 0001</p>
   </header>
 
   <!-- FORM STATE -->
@@ -90,7 +89,8 @@
           <strong class="text-white">Confidentiality:</strong> Your responses will be kept
           <strong class="text-white">confidential</strong>. Your <strong class="text-white">email</strong>
           will only be used to <strong class="text-white">link your answers across the two sessions</strong>
-          and to provide <strong class="text-white">study links and reminders</strong> (e.g. calendar events).
+          and, if you choose, to provide <strong class="text-white">study links by email</strong> and
+          <strong class="text-white">reminders</strong> (e.g. calendar events).
           It will not be used for unrelated marketing.
         </p>
         <p>
@@ -117,7 +117,7 @@
             required
           />
           <p class="text-slate-500 text-xs mt-1">
-            Required. Used only to match Session 1 and Session 2 and to send your session link (e.g. in your calendar).
+            Required. Used only to match Session 1 and Session 2 and, if you choose, send your session link by email.
           </p>
         </div>
 
@@ -222,6 +222,12 @@
           </div>
 
           <div class="bg-slate-700 rounded-xl p-4">
+            <label class="flex items-start gap-3 mb-4 cursor-pointer">
+              <input type="checkbox" id="chk-email-link" class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0" />
+              <span class="text-slate-400 text-sm leading-relaxed">
+                Get my <strong class="text-slate-300">Session 1 link</strong> in my email.
+              </span>
+            </label>
             <p class="text-slate-300 text-sm font-medium mb-3">Safety &amp; consent *</p>
             <label class="flex items-start gap-3 mb-3 cursor-pointer">
               <input type="checkbox" id="chk-bp" class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0" />
@@ -247,6 +253,14 @@
         <p id="eligibility-hint" class="text-slate-500 text-xs mb-4">
           After you answer the two eligibility questions above, you will be able to choose Session 1 and confirm consent (if you are eligible).
         </p>
+
+        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-4">
+          <p class="text-emerald-300 text-sm font-medium mb-1">Completion raffle</p>
+          <p class="text-emerald-200/90 text-sm leading-relaxed">
+            Participants who complete both sessions will be entered into a raffle for gift cards:
+            one $100 gift card, one $50 gift card, and two $25 gift cards.
+          </p>
+        </div>
 
         <p id="reg-error" class="hidden text-red-400 text-sm mb-4 bg-red-900/30 rounded-xl px-4 py-3"></p>
 
@@ -284,15 +298,17 @@
         <p id="group-label" class="text-white font-mono text-sm"></p>
       </div>
 
-      <div class="bg-slate-700/50 rounded-xl p-4 mb-5">
-        <p class="text-slate-300 text-sm font-medium mb-1">Session 1 scheduled for:</p>
-        <p id="session1-time" class="text-white font-semibold text-base"></p>
+      <div id="success-session-box" class="bg-slate-700/50 rounded-xl p-4 mb-4">
+        <p id="success-session-label" class="text-slate-300 text-sm font-medium mb-1">Session 1 scheduled for:</p>
+        <p id="success-session-time" class="text-white font-semibold text-base"></p>
       </div>
 
+      <div id="success-link-container" class="mb-4"></div>
+      <p id="success-email-status" class="hidden text-xs rounded-xl px-4 py-3 mb-4"></p>
       <div id="calendar-links-container" class="mb-5"></div>
 
       <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
-        <p class="text-amber-300 text-sm font-medium mb-2">Before Session 1</p>
+        <p id="success-prep-title" class="text-amber-300 text-sm font-medium mb-2">Before Session 1</p>
         <ul class="text-amber-200/80 text-sm space-y-1 list-disc list-inside">
           <li>Do NOT do intense core exercises in the 24 hours before.</li>
           <li>Wear comfortable clothing.</li>
@@ -342,6 +358,7 @@
     var fieldAge = document.getElementById('field-age');
     var fieldName = document.getElementById('field-name');
     var fieldDT = document.getElementById('field-datetime');
+    var chkEmailLink = document.getElementById('chk-email-link');
     var chkBp = document.getElementById('chk-bp');
     var chkConsent = document.getElementById('chk-consent');
     var enrollmentExtra = document.getElementById('enrollment-extra');
@@ -437,6 +454,8 @@
       var injuryUnsafe = getInjury() === 'yes';
       var availability = getAvail() === 'yes';
       var ageNum = parseInt(fieldAge.value.trim(), 10);
+      var session1Iso = isEligiblePath() ? localDateTimeValueToIso(fieldDT.value) : '';
+      var session1Label = session1Iso ? formatStudyDateTime(session1Iso) : '';
 
       var payload = {
         action: 'register',
@@ -446,9 +465,12 @@
         gender: getGender(),
         injuryUnsafe: injuryUnsafe,
         availability: availability,
-        session1PlannedAt: isEligiblePath() ? fieldDT.value : '',
+        session1PlannedAt: session1Iso,
+        session1PlannedLabel: session1Label,
+        emailOptIn: chkEmailLink.checked,
         consentBp: chkBp.checked,
         consentParticipate: chkConsent.checked,
+        contactEmail: CONTACT,
       };
 
       try {
@@ -486,8 +508,13 @@
             email: payload.email,
             groupIndex: data.groupIndex,
             groupLabel: data.groupLabel,
-            scheduledDateTime: fieldDT.value,
+            scheduledDateTime: data.nextSessionNum === 2 ? data.session2PlannedAt : data.session1PlannedAt,
+            nextSessionNum: data.nextSessionNum,
+            sessionsCompleted: data.sessionsCompleted,
             alreadyRegistered: true,
+            emailRequested: payload.emailOptIn,
+            emailSent: data.emailSent,
+            emailError: data.emailError,
           });
           return;
         }
@@ -498,8 +525,13 @@
             email: payload.email,
             groupIndex: data.groupIndex,
             groupLabel: data.groupLabel,
-            scheduledDateTime: fieldDT.value,
+            scheduledDateTime: data.session1PlannedAt || session1Iso,
+            nextSessionNum: data.nextSessionNum || 1,
+            sessionsCompleted: data.sessionsCompleted || 0,
             alreadyRegistered: false,
+            emailRequested: payload.emailOptIn,
+            emailSent: data.emailSent,
+            emailError: data.emailError,
           });
           return;
         }
@@ -522,11 +554,25 @@
       viewSuc.classList.add('fade-in');
 
       document.getElementById('success-title').textContent =
-        o.alreadyRegistered ? 'Already registered' : 'You\'re enrolled!';
+        o.sessionsCompleted >= EXPERIMENT_CONFIG.numSessions
+          ? 'Study already complete'
+          : (o.alreadyRegistered ? 'Already registered' : 'You\'re enrolled!');
 
       var line = 'Registered as: ' + o.email;
       if (o.name) line += ' (' + o.name + ')';
       document.getElementById('success-line').textContent = line;
+
+      if (o.sessionsCompleted >= EXPERIMENT_CONFIG.numSessions) {
+        document.getElementById('group-badge').classList.add('hidden');
+        document.getElementById('success-session-box').classList.add('hidden');
+        document.getElementById('success-link-container').innerHTML = '';
+        document.getElementById('calendar-links-container').innerHTML = '';
+        document.getElementById('success-email-status').classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('group-badge').classList.remove('hidden');
+      document.getElementById('success-session-box').classList.remove('hidden');
 
       var perms = EXPERIMENT_CONFIG.permutations;
       var tracks = EXPERIMENT_CONFIG.tracks;
@@ -538,16 +584,43 @@
       document.getElementById('group-label').textContent =
         'Session order (assigned audio): ' + labels.join(' → ');
 
-      var dt = new Date(o.scheduledDateTime);
-      document.getElementById('session1-time').textContent = dt.toLocaleString([], {
-        weekday: 'long', month: 'long', day: 'numeric',
-        hour: '2-digit', minute: '2-digit',
-      });
+      document.getElementById('success-session-label').textContent =
+        'Session ' + o.nextSessionNum + ' scheduled for:';
+      document.getElementById('success-session-time').textContent =
+        formatStudyDateTime(o.scheduledDateTime) || 'Not yet scheduled';
+      document.getElementById('success-prep-title').textContent =
+        'Before Session ' + o.nextSessionNum;
 
-      renderCalendarLinks(
-        document.getElementById('calendar-links-container'),
-        { email: o.email, sessionNum: 1, scheduledDateTime: o.scheduledDateTime }
+      renderDirectSessionLink(
+        document.getElementById('success-link-container'),
+        {
+          email: o.email,
+          sessionNum: o.nextSessionNum,
+          buttonLabel: 'Open Session ' + o.nextSessionNum,
+          note: 'You can use this link directly if your calendar reminder fails.',
+        }
       );
+
+      if (o.scheduledDateTime) {
+        renderCalendarLinks(
+          document.getElementById('calendar-links-container'),
+          { email: o.email, sessionNum: o.nextSessionNum, scheduledDateTime: o.scheduledDateTime }
+        );
+      } else {
+        document.getElementById('calendar-links-container').innerHTML = '';
+      }
+
+      var emailStatus = document.getElementById('success-email-status');
+      emailStatus.className = 'hidden text-xs rounded-xl px-4 py-3 mb-4';
+      if (o.emailSent) {
+        emailStatus.textContent = 'We sent your Session ' + o.nextSessionNum + ' link to ' + o.email + '.';
+        emailStatus.classList.remove('hidden');
+        emailStatus.classList.add('bg-emerald-500/10', 'text-emerald-200', 'border', 'border-emerald-500/30');
+      } else if (o.emailRequested && o.emailError) {
+        emailStatus.textContent = 'We could not send the email, but your direct link is shown below.';
+        emailStatus.classList.remove('hidden');
+        emailStatus.classList.add('bg-amber-500/10', 'text-amber-200', 'border', 'border-amber-500/30');
+      }
     }
 
     document.getElementById('btn-re-register').addEventListener('click', function () {

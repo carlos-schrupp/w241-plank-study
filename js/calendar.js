@@ -9,6 +9,25 @@ function getSessionUrl(email, sessionNum) {
   return `${base}session.html?email=${encodeURIComponent(email)}&session=${sessionNum}`;
 }
 
+function localDateTimeValueToIso(value) {
+  if (!value) return '';
+  const dt = new Date(value);
+  return Number.isNaN(dt.getTime()) ? '' : dt.toISOString();
+}
+
+function formatStudyDateTime(value) {
+  if (!value) return '';
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return '';
+  return dt.toLocaleString([], {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function _toUTCStamp(date) {
   const p = n => String(n).padStart(2, '0');
   return `${date.getUTCFullYear()}${p(date.getUTCMonth() + 1)}${p(date.getUTCDate())}` +
@@ -36,7 +55,7 @@ function buildICSBlob({ title, description, startDate, durationMinutes, uid }) {
   const content = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//W241 Plank Study//EN',
+    'PRODID:-//Physical Performance Study//EN',
     'BEGIN:VEVENT',
     `UID:${uid || (typeof crypto !== 'undefined' ? crypto.randomUUID() : Date.now())}`,
     `DTSTAMP:${_toUTCStamp(now)}`,
@@ -47,12 +66,12 @@ function buildICSBlob({ title, description, startDate, durationMinutes, uid }) {
     'BEGIN:VALARM',
     'TRIGGER:-PT24H',
     'ACTION:DISPLAY',
-    'DESCRIPTION:Plank study session reminder — tomorrow',
+    'DESCRIPTION:Physical Performance Study session reminder — tomorrow',
     'END:VALARM',
     'BEGIN:VALARM',
     'TRIGGER:-PT1H',
     'ACTION:DISPLAY',
-    'DESCRIPTION:Plank study session in 1 hour',
+    'DESCRIPTION:Physical Performance Study session in 1 hour',
     'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR',
@@ -71,16 +90,35 @@ function triggerICSDownload(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
+function renderDirectSessionLink(container, { email, sessionNum, buttonLabel, note }) {
+  const sessionUrl = getSessionUrl(email, sessionNum);
+  container.innerHTML = `
+    <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+      <p class="text-blue-300 text-xs font-medium uppercase tracking-wider mb-1">Direct session link</p>
+      <a href="${sessionUrl}"
+         class="btn-primary inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold w-full">
+        ${buttonLabel || `Open Session ${sessionNum}`}
+      </a>
+      <p class="text-slate-400 text-xs mt-3 break-all">${sessionUrl}</p>
+      ${note ? `<p class="text-slate-400 text-xs mt-2">${note}</p>` : ''}
+    </div>
+  `;
+}
+
 /**
  * Renders Google Calendar + .ics download buttons into `container`.
  * @param {HTMLElement} container
  * @param {{ email: string, sessionNum: number, scheduledDateTime: string|Date }} opts
  */
 function renderCalendarLinks(container, { email, sessionNum, scheduledDateTime }) {
-  const title = `W241 Plank Study — Session ${sessionNum}`;
+  const studyTitle =
+    typeof EXPERIMENT_CONFIG !== 'undefined' && EXPERIMENT_CONFIG.studyTitle
+      ? EXPERIMENT_CONFIG.studyTitle
+      : 'Physical Performance Study';
+  const title = `${studyTitle} — Session ${sessionNum}`;
   const sessionUrl = getSessionUrl(email, sessionNum);
   const description =
-    `W241 Plank Study — Session ${sessionNum}\n\n` +
+    `${studyTitle} — Session ${sessionNum}\n\n` +
     `When it's time, open this link:\n${sessionUrl}\n\n` +
     `Remember: wear comfortable clothing and have space for a forearm plank.`;
 
@@ -96,7 +134,7 @@ function renderCalendarLinks(container, { email, sessionNum, scheduledDateTime }
     description,
     startDate: scheduledDateTime,
     durationMinutes: 30,
-    uid: `w241-${email}-s${sessionNum}@plank-study`,
+    uid: `physical-performance-study-${email}-s${sessionNum}@study`,
   });
 
   container.innerHTML = `
@@ -118,6 +156,6 @@ function renderCalendarLinks(container, { email, sessionNum, scheduledDateTime }
   `;
 
   container.querySelector('#cal-ics').addEventListener('click', () => {
-    triggerICSDownload(icsBlob, `w241_session_${sessionNum}.ics`);
+    triggerICSDownload(icsBlob, `physical_performance_study_session_${sessionNum}.ics`);
   });
 }
