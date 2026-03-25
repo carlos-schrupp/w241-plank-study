@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
-  <title>Physical Performance Study — Session</title>
+  <title>Estudio de Rendimiento Físico — Sesión</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,8 +20,6 @@
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior: none;
     }
-
-    /* ---- Shared button styles ---- */
     .btn-primary {
       background: #3b82f6;
       color: #fff;
@@ -36,12 +34,8 @@
       transition: border-color 0.15s;
     }
     .btn-outline:active { border-color: #3b82f6; }
-
-    /* ---- Step visibility ---- */
     .step { display: none; }
     .step.active { display: block; }
-
-    /* ---- Plank screen — full dark, portrait-locked feel ---- */
     #step-plank {
       position: fixed;
       inset: 0;
@@ -53,7 +47,6 @@
       justify-content: center;
     }
     #step-plank.active { display: flex; }
-
     #timer-display {
       font-size: clamp(72px, 22vw, 160px);
       font-weight: 800;
@@ -113,8 +106,6 @@
     #btn-plank-back:active {
       transform: scale(0.96);
     }
-
-    /* ---- Recording indicator ---- */
     #recording-indicator {
       position: fixed;
       top: calc(env(safe-area-inset-top) + 16px);
@@ -137,8 +128,6 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.2; }
     }
-
-    /* ---- Scale question buttons ---- */
     .scale-btn {
       min-width: 40px;
       height: 44px;
@@ -158,8 +147,6 @@
       color: #fff;
     }
     .scale-btn:active { transform: scale(0.94); }
-
-    /* ---- Radio option buttons ---- */
     .radio-btn {
       width: 100%;
       padding: 12px 16px;
@@ -178,11 +165,8 @@
       color: #bfdbfe;
     }
     .radio-btn:active { transform: scale(0.98); }
-
     .fade-in { animation: fadeIn 0.25s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-
-    /* ---- Progress bar ---- */
     #progress-bar {
       height: 4px;
       background: #1e293b;
@@ -199,43 +183,38 @@
 </head>
 <body class="bg-slate-900 min-h-screen">
 
-  <!-- Progress bar -->
   <div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
 
-  <!-- Scroll container -->
   <div class="pt-6 pb-24 px-4 max-w-lg mx-auto">
 
-    <!-- Step: LOADING -->
     <section id="step-loading" class="step active fade-in mt-20 text-center">
       <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-slate-400 text-sm">Loading your session...</p>
+      <p class="text-slate-400 text-sm">Cargando tu sesión...</p>
     </section>
 
-    <!-- Step: ERROR -->
     <section id="step-error" class="step mt-10">
       <div class="bg-red-900/30 border border-red-500/40 rounded-2xl p-6 text-center">
-        <p class="text-red-300 text-base font-semibold mb-2">Something went wrong</p>
+        <p class="text-red-300 text-base font-semibold mb-2">Ocurrió un problema</p>
         <p id="error-message" class="text-red-200/80 text-sm mb-5"></p>
-        <a href="index.html" class="btn-primary inline-block rounded-xl px-6 py-3 text-sm font-semibold">
-          Back to Registration
+        <a href="index_es.html" class="btn-primary inline-block rounded-xl px-6 py-3 text-sm font-semibold">
+          Volver al registro
         </a>
       </div>
     </section>
 
-    <!-- Step 1: SAFETY CHECK -->
     <section id="step-safety" class="step">
       <div class="mb-6">
-        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 1</p>
-        <h2 class="text-white text-xl font-bold">Before You Begin</h2>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Paso 1</p>
+        <h2 class="text-white text-xl font-bold">Antes de comenzar</h2>
         <p id="safety-session-label" class="text-slate-400 text-sm mt-1"></p>
       </div>
 
       <div class="bg-slate-800 rounded-2xl p-5 mb-4">
-        <p class="text-slate-300 text-sm font-medium mb-3">Confirm your identity</p>
-        <p class="text-slate-400 text-sm mb-1">Participating as:</p>
+        <p class="text-slate-300 text-sm font-medium mb-3">Confirma tu identidad</p>
+        <p class="text-slate-400 text-sm mb-1">Participas como:</p>
         <p id="safety-email" class="text-white font-semibold text-sm bg-slate-700 rounded-xl px-4 py-3 mb-1"></p>
         <p class="text-slate-500 text-xs">
-          Wrong email? <a href="index.html" class="text-blue-400 underline">Back to registration</a>
+          ¿Correo incorrecto? <a href="index_es.html" class="text-blue-400 underline">Volver al registro</a>
         </p>
       </div>
 
@@ -244,72 +223,71 @@
         role="note"></p>
 
       <div class="bg-slate-800 rounded-2xl p-5 mb-5">
-        <p class="text-slate-300 text-sm font-medium mb-3">Safety check</p>
+        <p class="text-slate-300 text-sm font-medium mb-3">Verificación de seguridad</p>
         <label class="flex items-start gap-3 mb-3 cursor-pointer">
           <input type="checkbox" id="chk-no-injury" class="mt-0.5 w-4 h-4 accent-blue-500" />
           <span class="text-slate-400 text-sm leading-relaxed">
-            I have not done intense core exercise in the last 24 hours.
+            No he realizado ejercicio intenso de abdomen en las últimas 24 horas.
           </span>
         </label>
         <label class="flex items-start gap-3 mb-3 cursor-pointer">
           <input type="checkbox" id="chk-no-bp" class="mt-0.5 w-4 h-4 accent-blue-500" />
           <span class="text-slate-400 text-sm leading-relaxed">
-            I do not have uncontrolled hypertension and am not currently injured.
+            No tengo hipertensión no controlada y no estoy lesionado actualmente.
           </span>
         </label>
         <label class="flex items-start gap-3 cursor-pointer">
           <input type="checkbox" id="chk-space" class="mt-0.5 w-4 h-4 accent-blue-500" />
           <span class="text-slate-400 text-sm leading-relaxed">
-            I have comfortable clothing, a suitable surface, and enough space for a forearm plank.
+            Tengo ropa cómoda, una superficie adecuada y suficiente espacio para una plancha sobre antebrazos.
           </span>
         </label>
       </div>
 
       <button id="btn-safety-next" disabled
         class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
-        Continue
+        Continuar
       </button>
     </section>
 
-    <!-- Step 2: INSTRUCTIONS -->
     <section id="step-instructions" class="step">
       <div class="mb-5">
-        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 2</p>
-        <h2 class="text-white text-xl font-bold">Exercise Instructions</h2>
-        <p class="text-slate-400 text-sm mt-1">Read these carefully before proceeding.</p>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Paso 2</p>
+        <h2 class="text-white text-xl font-bold">Instrucciones del ejercicio</h2>
+        <p class="text-slate-400 text-sm mt-1">Léelas con atención antes de continuar.</p>
       </div>
 
       <div class="bg-slate-800 rounded-2xl p-5 mb-4 space-y-4 text-sm text-slate-300 leading-relaxed">
 
         <div class="flex flex-col items-center gap-3">
-          <p class="text-white font-semibold mb-1 self-start">Getting into position</p>
+          <p class="text-white font-semibold mb-1 self-start">Cómo colocarte</p>
           <img
             src="assets/img/plank_form.png"
-            alt="Example of proper forearm plank form: straight line from head to heels, elbows under shoulders, hips level."
+            alt="Ejemplo de una plancha correcta: línea recta desde la cabeza hasta los talones, codos debajo de los hombros y caderas niveladas."
             class="w-full max-w-xs rounded-xl border border-slate-700 shadow-sm"
           />
           <ol class="list-decimal list-inside space-y-1 text-slate-400 self-start">
-            <li>Kneel and place forearms on the floor, elbows shoulder-width apart, directly under shoulders.</li>
-            <li>Extend your legs behind you, toes on the floor, feet hip-width apart.</li>
-            <li>Lift your hips so only forearms and toes support your body. Form a straight line head-to-heels.</li>
+            <li>Arrodíllate y coloca los antebrazos en el suelo, con los codos al ancho de los hombros y justo debajo de ellos.</li>
+            <li>Extiende las piernas hacia atrás, con los pies apoyados en el suelo y separados al ancho de la cadera.</li>
+            <li>Eleva las caderas para que solo los antebrazos y los pies sostengan el cuerpo. Forma una línea recta de la cabeza a los talones.</li>
           </ol>
         </div>
 
         <div>
-          <p class="text-white font-semibold mb-1">During the hold</p>
+          <p class="text-white font-semibold mb-1">Durante la plancha</p>
           <ul class="list-disc list-inside space-y-1 text-slate-400">
-            <li>Tuck chin, relax shoulders and jaw.</li>
-            <li>Breathe steadily — do <strong class="text-white">not</strong> hold your breath.</li>
-            <li>Keep hips level — no sagging or piking.</li>
+            <li>Mantén la barbilla ligeramente recogida y relaja hombros y mandíbula.</li>
+            <li>Respira de forma constante; <strong class="text-white">no</strong> contengas la respiración.</li>
+            <li>Mantén las caderas niveladas; evita que bajen o se eleven demasiado.</li>
           </ul>
         </div>
 
         <div>
-          <p class="text-white font-semibold mb-1">When to stop</p>
+          <p class="text-white font-semibold mb-1">Cuándo detenerte</p>
           <p class="text-slate-400">
-            Stop when you voluntarily quit OR when your form breaks
-            (knees touch ground, or hips drop/rise and cannot be corrected within 2 seconds).
-            Stop the timer immediately when the plank ends.
+            Detente cuando decidas terminar por voluntad propia o cuando tu forma se rompa
+            (las rodillas tocan el suelo, o las caderas bajan o suben y no logras corregirlo en 2 segundos).
+            Detén el cronómetro en cuanto termine la plancha.
           </p>
         </div>
 
@@ -320,40 +298,37 @@
 
       <button id="btn-instructions-next"
         class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
-        I understand — Continue
+        Entendido — Continuar
       </button>
     </section>
 
-    <!-- Step 2b: SESSION 1 ONLY — activity background -->
     <section id="step-session1-activity" class="step">
       <div class="mb-5">
-        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 3</p>
-        <h2 class="text-white text-xl font-bold">About your activity</h2>
-        <p class="text-slate-400 text-sm mt-1">A few quick questions before the audio step. Session 1 only.</p>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Paso 3</p>
+        <h2 class="text-white text-xl font-bold">Sobre tu actividad física</h2>
+        <p class="text-slate-400 text-sm mt-1">Unas preguntas rápidas antes del audio. Solo en la Sesión 1.</p>
       </div>
 
       <div id="session1-activity-form" class="space-y-5 mb-6"></div>
 
       <button id="btn-session1-activity-next" disabled
         class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
-        Continue to audio
+        Continuar al audio
       </button>
     </section>
 
-    <!-- Step 3: AUDIO -->
     <section id="step-audio" class="step">
       <div class="mb-5">
-        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 3</p>
-        <h2 class="text-white text-xl font-bold">Start this session&apos;s audio</h2>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Paso 3</p>
+        <h2 class="text-white text-xl font-bold">Inicia el audio de esta sesión</h2>
         <p id="audio-track-label" class="text-slate-400 text-sm mt-1"></p>
       </div>
 
       <div class="bg-slate-800 rounded-2xl overflow-hidden mb-4">
-        <!-- YouTube player injected here by JS -->
         <div id="yt-container" class="w-full bg-slate-900" style="min-height: 200px;">
           <div id="yt-placeholder" class="flex flex-col items-center justify-center h-48 text-slate-500">
             <div class="w-7 h-7 border-4 border-slate-600 border-t-blue-500 rounded-full animate-spin mb-3"></div>
-            <p class="text-sm">Loading player...</p>
+            <p class="text-sm">Cargando reproductor...</p>
           </div>
           <div id="youtube-player"></div>
         </div>
@@ -361,41 +336,39 @@
 
       <div class="bg-slate-800 rounded-xl p-4 mb-4 text-sm text-slate-400">
         <p class="mb-1">
-          Set volume to about <strong class="text-white">60%</strong> — clearly audible but not uncomfortable.
+          Ajusta el volumen a aproximadamente <strong class="text-white">60%</strong>: que se escuche bien pero sin resultar molesto.
         </p>
-        <p>Use headphones if possible.</p>
+        <p>Usa audífonos si es posible.</p>
       </div>
 
       <div id="audio-fallback" class="hidden bg-slate-700/50 rounded-xl p-4 mb-4 text-sm">
-        <p class="text-slate-300 mb-2">Player not loading?</p>
+        <p class="text-slate-300 mb-2">¿No carga el reproductor?</p>
         <p id="audio-fallback-link" class="text-blue-400"></p>
-        <p class="text-slate-500 text-xs mt-1">Open in the YouTube app, then come back here.</p>
+        <p class="text-slate-500 text-xs mt-1">Ábrelo en la app de YouTube y luego regresa aquí.</p>
       </div>
 
       <button id="btn-audio-next" disabled
         class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
-        Audio is playing — Continue
+        El audio ya está sonando — Continuar
       </button>
     </section>
 
-    <!-- Step 4: PRE-TASK QUESTIONS -->
     <section id="step-pre-task" class="step">
       <div class="mb-5">
-        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 4</p>
-        <h2 class="text-white text-xl font-bold">Quick Questions</h2>
-        <p class="text-slate-400 text-sm mt-1">Answer while the audio plays. Then you will start the plank.</p>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Paso 4</p>
+        <h2 class="text-white text-xl font-bold">Preguntas rápidas</h2>
+        <p class="text-slate-400 text-sm mt-1">Respóndelas mientras suena el audio. Luego comenzarás la plancha.</p>
       </div>
 
       <div id="pre-task-form" class="space-y-5 mb-6"></div>
 
-      <!-- Camera option — shown before plank start -->
       <div id="camera-option" class="bg-slate-800 rounded-2xl p-4 mb-5">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-white text-sm font-medium">Enable form verification camera</p>
+            <p class="text-white text-sm font-medium">Activar cámara para verificar la forma</p>
             <p class="text-slate-500 text-xs mt-0.5 leading-relaxed">
-              Optional — takes 1 photo per second and uploads a single contact-sheet image after the plank.
-              If you can turn this on, it helps us verify exercise form for research quality. Images are combined into one sheet and used only for this study.
+              Opcional. Toma 1 foto por segundo y sube una sola imagen en formato de hoja de contacto después de la plancha.
+              Si puedes activarla, nos ayuda a verificar la forma del ejercicio para la calidad de la investigación. Las imágenes se combinan en una sola hoja y se usan solo para este estudio.
             </p>
           </div>
           <label class="relative inline-flex items-center cursor-pointer ml-3">
@@ -408,50 +381,45 @@
         </div>
         <p id="camera-status" class="text-xs mt-2 text-slate-500"></p>
         <div id="camera-positioning" class="hidden bg-slate-700/50 rounded-xl p-3 mt-3">
-          <p class="text-slate-200 text-xs font-medium mb-2">Phone positioning tips</p>
+          <p class="text-slate-200 text-xs font-medium mb-2">Consejos para colocar el teléfono</p>
           <ul class="text-slate-400 text-xs leading-relaxed list-disc list-inside space-y-1">
-            <li>Place the phone on a stable surface instead of holding it.</li>
-            <li>Use landscape orientation if possible.</li>
-            <li>Set it a few feet away so your full body is visible during the plank.</li>
-            <li>A side or front-side angle works best for form review.</li>
-            <li>Use a bright room so your body position is clearly visible.</li>
+            <li>Coloca el teléfono sobre una superficie estable en lugar de sostenerlo con la mano.</li>
+            <li>Usa orientación horizontal si es posible.</li>
+            <li>Déjalo a unos pocos pies de distancia para que se vea tu cuerpo completo durante la plancha.</li>
+            <li>Un ángulo lateral o semi frontal funciona mejor para revisar la forma.</li>
+            <li>Usa un lugar iluminado para que tu posición corporal se vea con claridad.</li>
           </ul>
         </div>
       </div>
 
       <button id="btn-pre-task-next" disabled
         class="btn-primary w-full rounded-xl py-4 font-semibold text-lg">
-        I'm Ready — Start Plank
+        Estoy listo — Empezar plancha
       </button>
     </section>
+  </div>
 
-    <!-- Step 5: PLANK (full-screen, handled by CSS position:fixed) -->
-  </div><!-- end scroll container -->
-
-  <!-- PLANK STEP — outside scroll container, fixed overlay -->
   <section id="step-plank" class="step">
-    <button id="btn-plank-back" class="hidden" type="button">← Back</button>
+    <button id="btn-plank-back" class="hidden" type="button">← Volver</button>
     <div id="recording-indicator" class="hidden">
       <div class="rec-dot"></div>
       <span>REC</span>
     </div>
-    <p id="timer-label">HOLDING</p>
+    <p id="timer-label">MANTEN</p>
     <div id="timer-display">00:00.0</div>
-    <button id="btn-plank-stop">STOP</button>
+    <button id="btn-plank-stop">DETENER</button>
   </section>
 
-  <!-- Back inside scroll container for remaining steps -->
   <div class="pb-24 px-4 max-w-lg mx-auto">
 
-    <!-- Step 5: POST-TASK QUESTIONS -->
     <section id="step-post-task" class="step mt-4">
       <div class="mb-5">
-        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Step 5</p>
-        <h2 class="text-white text-xl font-bold">Post-Session Questions</h2>
+        <p class="js-step-banner text-slate-400 text-xs uppercase tracking-widest mb-1">Paso 5</p>
+        <h2 class="text-white text-xl font-bold">Preguntas posteriores a la sesión</h2>
       </div>
 
       <div class="bg-green-900/30 border border-green-500/40 rounded-2xl p-4 mb-5">
-        <p class="text-green-300 text-xs uppercase tracking-wider font-medium mb-1">Your plank time</p>
+        <p class="text-green-300 text-xs uppercase tracking-wider font-medium mb-1">Tu tiempo de plancha</p>
         <p id="plank-time-display" class="text-white font-bold text-3xl font-mono"></p>
       </div>
 
@@ -461,40 +429,38 @@
 
       <button id="btn-submit" disabled
         class="btn-primary w-full rounded-xl py-4 font-semibold text-base">
-        Submit Session Data
+        Enviar datos de la sesión
       </button>
     </section>
 
-    <!-- Step: SUBMITTING -->
     <section id="step-submitting" class="step mt-20 text-center">
       <div class="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-white font-semibold mb-1">Saving your data...</p>
+      <p class="text-white font-semibold mb-1">Guardando tus datos...</p>
       <p id="submitting-note" class="text-slate-400 text-sm"></p>
     </section>
 
-    <!-- Step: SCHEDULE NEXT SESSION -->
     <section id="step-schedule" class="step mt-4 fade-in">
       <div class="mb-5">
-        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Schedule next session</p>
-        <h2 class="text-white text-xl font-bold">Session Complete!</h2>
+        <p class="text-slate-400 text-xs uppercase tracking-widest mb-1">Programar la siguiente sesión</p>
+        <h2 class="text-white text-xl font-bold">Sesión completada</h2>
         <p id="schedule-note" class="text-slate-400 text-sm mt-1"></p>
       </div>
 
       <div class="bg-green-900/20 border border-green-500/30 rounded-2xl p-4 mb-5">
-        <p class="text-green-300 text-xs uppercase tracking-wider font-medium mb-1">Time recorded</p>
+        <p class="text-green-300 text-xs uppercase tracking-wider font-medium mb-1">Tiempo registrado</p>
         <p id="schedule-plank-time" class="text-white font-bold text-2xl font-mono"></p>
       </div>
 
       <div class="bg-slate-800 rounded-2xl p-5 mb-4">
-        <p class="text-slate-300 text-sm font-medium mb-2">Schedule Session <span id="next-session-num"></span></p>
-        <p class="text-slate-500 text-xs mb-3">Must be at least 24 hours and no more than 72 hours from now.</p>
+        <p class="text-slate-300 text-sm font-medium mb-2">Programa la Sesión <span id="next-session-num"></span></p>
+        <p class="text-slate-500 text-xs mb-3">Debe ser al menos 24 horas y no más de 72 horas desde ahora.</p>
         <input id="next-session-dt" type="datetime-local"
           class="w-full bg-slate-700 border border-slate-600 text-white rounded-xl px-4 py-3 text-sm
                  focus:outline-none focus:border-blue-500" />
         <label class="flex items-start gap-3 mt-4 cursor-pointer">
           <input type="checkbox" id="chk-next-email-link" class="mt-0.5 w-4 h-4 accent-blue-500 shrink-0" />
           <span class="text-slate-400 text-sm leading-relaxed">
-            Get my <strong class="text-slate-300">Session <span id="next-session-email-num"></span> link</strong> in my email.
+            Recibir en mi correo el <strong class="text-slate-300">enlace de la Sesión <span id="next-session-email-num"></span></strong>.
           </span>
         </label>
       </div>
@@ -503,7 +469,7 @@
 
       <button id="btn-save-next-session" disabled
         class="btn-primary w-full rounded-xl py-4 font-semibold text-base mb-4">
-        Confirm Session <span id="next-session-btn-num"></span> schedule
+        Confirmar horario de la Sesión <span id="next-session-btn-num"></span>
       </button>
 
       <div id="next-link-container" class="mb-4"></div>
@@ -512,13 +478,12 @@
 
       <div class="bg-slate-800 rounded-xl p-4 text-sm text-slate-400">
         <p>
-          Between sessions: wait <strong class="text-white">at least 24 hours</strong>
-          but <strong class="text-white">no more than 72 hours</strong>.
+          Entre sesiones: espera <strong class="text-white">al menos 24 horas</strong>
+          pero <strong class="text-white">no más de 72 horas</strong>.
         </p>
       </div>
     </section>
 
-    <!-- Step: ALL SESSIONS COMPLETE -->
     <section id="step-complete" class="step mt-10 text-center fade-in">
       <div class="bg-slate-800 rounded-2xl p-8">
         <div class="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -526,40 +491,38 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
           </svg>
         </div>
-        <h2 class="text-white text-2xl font-bold mb-2">Study Complete!</h2>
+        <h2 class="text-white text-2xl font-bold mb-2">Estudio completado</h2>
         <p class="text-slate-400 text-sm mb-1">
-          You have completed all sessions. Thank you for participating!
+          Ya completaste todas las sesiones. Gracias por participar.
         </p>
         <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mt-5 text-left">
-          <p class="text-emerald-300 text-sm font-medium mb-1">Raffle entry confirmed</p>
+          <p class="text-emerald-300 text-sm font-medium mb-1">Participación en el sorteo confirmada</p>
           <p class="text-emerald-200/90 text-sm leading-relaxed">
-            Because you completed both sessions, you have been entered into the raffle for gift cards:
-            one $100 gift card, one $50 gift card, and two $25 gift cards.
+            Como completaste ambas sesiones, ya quedaste inscrito en el sorteo de tarjetas de regalo:
+            una de $100, una de $50 y dos de $25.
           </p>
         </div>
       </div>
     </section>
 
-  </div><!-- end second scroll container -->
+  </div>
 
   <div id="post-plank-audio-bar" class="hidden fixed inset-x-0 bottom-4 px-4 z-40">
     <div class="max-w-lg mx-auto">
       <button id="btn-stop-audio" type="button"
         class="btn-outline w-full rounded-xl py-3 text-sm font-semibold">
-        Stop audio
+        Detener audio
       </button>
     </div>
   </div>
 
-  <!-- Hidden camera elements -->
   <video id="camera-feed" autoplay playsinline muted
     class="fixed bottom-4 right-4 w-20 h-14 rounded-lg object-cover opacity-50 z-50 hidden"></video>
   <canvas id="capture-canvas" class="hidden"></canvas>
   <canvas id="sheet-canvas" class="hidden"></canvas>
 
-  <!-- YouTube IFrame API -->
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script>window.APP_LOCALE = 'en';</script>
+  <script>window.APP_LOCALE = 'es';</script>
   <script src="js/i18n.js"></script>
   <script src="js/config.js"></script>
   <script src="js/calendar.js"></script>

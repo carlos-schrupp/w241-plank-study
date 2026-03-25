@@ -42,6 +42,21 @@ function _normalizeSiteBaseUrl() {
   return base;
 }
 
+function _normalizeLocale(locale) {
+  var str = String(locale || '').toLowerCase();
+  return str.indexOf('es') === 0 ? 'es' : 'en';
+}
+
+function _sessionPageName(locale) {
+  return _normalizeLocale(locale) === 'es' ? 'session_es.html' : 'session.html';
+}
+
+function _studyTitle(locale) {
+  return _normalizeLocale(locale) === 'es'
+    ? 'Estudio de Rendimiento Físico'
+    : 'Physical Performance Study';
+}
+
 function _objectToRow(headers, obj) {
   return headers.map(function (key) {
     return Object.prototype.hasOwnProperty.call(obj, key) ? obj[key] : '';
@@ -76,6 +91,7 @@ function _participantToResponse(p) {
     sessionsCompleted: sessionsCompleted,
     nextSessionNum: nextSessionNum,
     emailOptIn: _fromYesNo(p.email_opt_in),
+    locale: _normalizeLocale(p.locale),
   };
 
   for (var s = 1; s <= NUM_SESSIONS; s++) {
@@ -89,10 +105,10 @@ function _participantToResponse(p) {
   return out;
 }
 
-function _buildSessionUrl(email, sessionNum) {
+function _buildSessionUrl(email, sessionNum, locale) {
   var base = _normalizeSiteBaseUrl();
   if (!base) return '';
-  return base + 'session.html?email=' + encodeURIComponent(email) + '&session=' + sessionNum;
+  return base + _sessionPageName(locale) + '?email=' + encodeURIComponent(email) + '&session=' + sessionNum;
 }
 
 function _logRegistrationAttempt(obj) {
@@ -104,7 +120,8 @@ function _logEmailEvent(obj) {
 }
 
 function _sendSessionLinkEmail(opts) {
-  var sessionUrl = _buildSessionUrl(opts.email, opts.sessionNum);
+  var locale = _normalizeLocale(opts.locale);
+  var sessionUrl = _buildSessionUrl(opts.email, opts.sessionNum, locale);
   var sentAt = new Date().toISOString();
   if (!sessionUrl) {
     var missingBaseError = 'SITE_BASE_URL is not configured.';
@@ -120,27 +137,50 @@ function _sendSessionLinkEmail(opts) {
     return { sent: false, error: missingBaseError };
   }
 
-  var studyTitle = 'Physical Performance Study';
-  var subject = studyTitle + ': Your Session ' + opts.sessionNum + ' link';
+  var studyTitle = _studyTitle(locale);
+  var subject = locale === 'es'
+    ? studyTitle + ': Enlace de tu Sesión ' + opts.sessionNum
+    : studyTitle + ': Your Session ' + opts.sessionNum + ' link';
   var timeText = opts.scheduledLabel
-    ? ('Planned time: ' + opts.scheduledLabel + '\n\n')
+    ? ((locale === 'es' ? 'Hora programada: ' : 'Planned time: ') + opts.scheduledLabel + '\n\n')
     : '';
-  var body =
-    'Thank you for participating in the ' + studyTitle + '.\n\n' +
-    'Session ' + opts.sessionNum + ' link:\n' + sessionUrl + '\n\n' +
-    timeText +
-    'Open this link when it is time for your session.\n' +
-    'Calendar reminders are still recommended.\n\n' +
-    'Questions? Contact ' + opts.contactEmail + '.';
-  var htmlBody =
-    '<p>Thank you for participating in the <strong>' + studyTitle + '</strong>.</p>' +
-    '<p><strong>Session ' + opts.sessionNum + ' link:</strong><br>' +
-    '<a href="' + sessionUrl + '">' + sessionUrl + '</a></p>' +
-    (opts.scheduledLabel
-      ? '<p><strong>Planned time:</strong> ' + opts.scheduledLabel + '</p>'
-      : '') +
-    '<p>Open this link when it is time for your session. Calendar reminders are still recommended.</p>' +
-    '<p>Questions? Contact <a href="mailto:' + opts.contactEmail + '">' + opts.contactEmail + '</a>.</p>';
+  var body;
+  var htmlBody;
+  if (locale === 'es') {
+    body =
+      'Gracias por participar en el ' + studyTitle + '.\n\n' +
+      'Enlace de la Sesión ' + opts.sessionNum + ':\n' + sessionUrl + '\n\n' +
+      timeText +
+      'Abre este enlace cuando llegue la hora de tu sesión.\n' +
+      'Aun así, se recomienda usar recordatorios de calendario.\n\n' +
+      '¿Preguntas? Contacta a ' + opts.contactEmail + '.';
+    htmlBody =
+      '<p>Gracias por participar en el <strong>' + studyTitle + '</strong>.</p>' +
+      '<p><strong>Enlace de la Sesión ' + opts.sessionNum + ':</strong><br>' +
+      '<a href="' + sessionUrl + '">' + sessionUrl + '</a></p>' +
+      (opts.scheduledLabel
+        ? '<p><strong>Hora programada:</strong> ' + opts.scheduledLabel + '</p>'
+        : '') +
+      '<p>Abre este enlace cuando llegue la hora de tu sesión. Aun así, se recomienda usar recordatorios de calendario.</p>' +
+      '<p>¿Preguntas? Contacta a <a href="mailto:' + opts.contactEmail + '">' + opts.contactEmail + '</a>.</p>';
+  } else {
+    body =
+      'Thank you for participating in the ' + studyTitle + '.\n\n' +
+      'Session ' + opts.sessionNum + ' link:\n' + sessionUrl + '\n\n' +
+      timeText +
+      'Open this link when it is time for your session.\n' +
+      'Calendar reminders are still recommended.\n\n' +
+      'Questions? Contact ' + opts.contactEmail + '.';
+    htmlBody =
+      '<p>Thank you for participating in the <strong>' + studyTitle + '</strong>.</p>' +
+      '<p><strong>Session ' + opts.sessionNum + ' link:</strong><br>' +
+      '<a href="' + sessionUrl + '">' + sessionUrl + '</a></p>' +
+      (opts.scheduledLabel
+        ? '<p><strong>Planned time:</strong> ' + opts.scheduledLabel + '</p>'
+        : '') +
+      '<p>Open this link when it is time for your session. Calendar reminders are still recommended.</p>' +
+      '<p>Questions? Contact <a href="mailto:' + opts.contactEmail + '">' + opts.contactEmail + '</a>.</p>';
+  }
 
   try {
     MailApp.sendEmail({
@@ -173,16 +213,21 @@ function _sendSessionLinkEmail(opts) {
   }
 }
 
-function _validateScheduledWindow(isoString, minHours, maxHours) {
+function _validateScheduledWindow(isoString, minHours, maxHours, locale) {
   var dt = new Date(isoString);
+  var loc = _normalizeLocale(locale);
   if (isNaN(dt.getTime())) {
-    return 'Please choose a valid date and time.';
+    return loc === 'es'
+      ? 'Elige una fecha y hora válidas.'
+      : 'Please choose a valid date and time.';
   }
   var diffMs = dt.getTime() - Date.now();
   var minMs = minHours * 3600 * 1000;
   var maxMs = maxHours * 3600 * 1000;
   if (diffMs < minMs || diffMs > maxMs) {
-    return 'Please choose a time between ' + minHours + ' and ' + maxHours + ' hours from now.';
+    return loc === 'es'
+      ? 'Elige un horario entre ' + minHours + ' y ' + maxHours + ' horas desde ahora.'
+      : 'Please choose a time between ' + minHours + ' and ' + maxHours + ' hours from now.';
   }
   return '';
 }
@@ -225,6 +270,7 @@ function _getSheet(name) {
         participantHeaders.push(_sessionPlanFieldName(s));
       }
       participantHeaders.push('email_opt_in');
+      participantHeaders.push('locale');
       sheet.appendRow(participantHeaders);
       sheet.setFrozenRows(1);
     } else if (name === 'sessions') {
@@ -240,7 +286,7 @@ function _getSheet(name) {
         'attempt_id', 'attempted_at', 'email', 'name', 'age', 'gender',
         'injury_unsafe', 'availability_yes',
         'session1_planned_at', 'enrollment_status', 'participant_id',
-        'consent_bp', 'consent_participate', 'email_opt_in'
+        'consent_bp', 'consent_participate', 'email_opt_in', 'locale'
       ]);
       sheet.setFrozenRows(1);
     } else if (name === 'email_log') {
@@ -316,6 +362,7 @@ function _handleRegister(data) {
   var consentParticipate = data.consentParticipate === true;
   var emailOptIn = data.emailOptIn === true;
   var contactEmail = String(data.contactEmail || '').trim() || 'carlos.schrupp@berkeley.edu';
+  var locale = _normalizeLocale(data.locale);
 
   if (!email || email.indexOf('@') === -1) {
     return _json({ error: 'Valid email is required.' });
@@ -350,6 +397,7 @@ function _handleRegister(data) {
       consent_bp: consentBp,
       consent_participate: consentParticipate,
       email_opt_in: _toYesNo(emailOptIn),
+      locale: locale,
     });
     return _json({
       success: true,
@@ -375,6 +423,7 @@ function _handleRegister(data) {
       consent_bp: consentBp,
       consent_participate: consentParticipate,
       email_opt_in: _toYesNo(emailOptIn),
+      locale: locale,
     });
     return _json({
       success: true,
@@ -399,9 +448,14 @@ function _handleRegister(data) {
     var nextPlannedAt = nextSessionNum
       ? String(existing[_sessionPlanFieldName(nextSessionNum)] || '')
       : '';
+    var existingLocale = _normalizeLocale(existing.locale || locale);
+    var existingUpdates = { locale: locale };
+    if (emailOptIn) existingUpdates.email_opt_in = 'yes';
+    _setParticipantFields(existing._row, existingUpdates);
+    existing.locale = locale;
+    existingResp.locale = locale;
 
     if (emailOptIn && nextSessionNum && nextPlannedAt) {
-      _setParticipantFields(existing._row, { email_opt_in: 'yes' });
       emailDelivery = _sendSessionLinkEmail({
         email: email,
         sessionNum: nextSessionNum,
@@ -409,6 +463,7 @@ function _handleRegister(data) {
         scheduledLabel: '',
         emailType: 'registration_resend',
         contactEmail: contactEmail,
+        locale: locale || existingLocale,
       });
       existing.email_opt_in = 'yes';
       existingResp.emailOptIn = true;
@@ -429,6 +484,7 @@ function _handleRegister(data) {
       consent_bp: consentBp,
       consent_participate: consentParticipate,
       email_opt_in: _toYesNo(emailOptIn),
+      locale: locale,
     });
 
     return _json({
@@ -445,6 +501,7 @@ function _handleRegister(data) {
       groupLabel: existingResp.groupLabel,
       sessionsCompleted: existingResp.sessionsCompleted,
       emailOptIn: existingResp.emailOptIn,
+      locale: existingResp.locale,
     });
   }
 
@@ -465,6 +522,7 @@ function _handleRegister(data) {
     sessions_completed: 0,
     registered_at: now,
     email_opt_in: _toYesNo(emailOptIn),
+    locale: locale,
   };
   participantObj[_sessionPlanFieldName(1)] = session1;
   for (var s = 2; s <= NUM_SESSIONS; s++) {
@@ -488,6 +546,7 @@ function _handleRegister(data) {
     consent_bp: consentBp,
     consent_participate: consentParticipate,
     email_opt_in: _toYesNo(emailOptIn),
+    locale: locale,
   });
 
   var emailDeliveryNew = { sent: false, error: '' };
@@ -499,6 +558,7 @@ function _handleRegister(data) {
       scheduledLabel: session1Label,
       emailType: 'registration',
       contactEmail: contactEmail,
+      locale: locale,
     });
   }
 
@@ -515,6 +575,7 @@ function _handleRegister(data) {
     emailOptIn: emailOptIn,
     emailSent: emailDeliveryNew.sent,
     emailError: emailDeliveryNew.error,
+    locale: locale,
   });
 }
 
@@ -566,6 +627,7 @@ function _handleScheduleNextSession(data) {
   var scheduledLabel = (data.scheduledLabel || '').trim();
   var emailOptIn = data.emailOptIn === true;
   var contactEmail = String(data.contactEmail || '').trim() || 'carlos.schrupp@berkeley.edu';
+  var locale = _normalizeLocale(data.locale || '');
 
   if (!email || !nextSessionNum || !scheduledAt) {
     return _json({ error: 'email, nextSessionNum, and scheduledAt are required' });
@@ -582,7 +644,7 @@ function _handleScheduleNextSession(data) {
     return _json({ error: 'All sessions are already complete.' });
   }
 
-  var validationError = _validateScheduledWindow(scheduledAt, 24, 72);
+  var validationError = _validateScheduledWindow(scheduledAt, 24, 72, locale || p.locale);
   if (validationError) {
     return _json({ error: validationError });
   }
@@ -590,6 +652,7 @@ function _handleScheduleNextSession(data) {
   var fieldName = _sessionPlanFieldName(nextSessionNum);
   var updates = {
     email_opt_in: _toYesNo(emailOptIn),
+    locale: locale || _normalizeLocale(p.locale),
   };
   updates[fieldName] = scheduledAt;
   _setParticipantFields(p._row, updates);
@@ -603,6 +666,7 @@ function _handleScheduleNextSession(data) {
       scheduledLabel: scheduledLabel,
       emailType: 'schedule_next_session',
       contactEmail: contactEmail,
+      locale: locale || p.locale,
     });
   }
 
@@ -613,6 +677,7 @@ function _handleScheduleNextSession(data) {
     emailOptIn: emailOptIn,
     emailSent: emailDelivery.sent,
     emailError: emailDelivery.error,
+    locale: locale || _normalizeLocale(p.locale),
   });
 }
 

@@ -36,29 +36,77 @@ const EXPERIMENT_CONFIG = {
   session1Activity: [
     {
       id: 'activity_level',
-      text: 'Are you a regular gym-goer or physically active?',
+      text: {
+        en: 'Are you a regular gym-goer or physically active?',
+        es: '¿Sueles ir al gimnasio o mantenerte físicamente activo?'
+      },
       type: 'radio',
       options: [
-        'Yes, regularly (≥ 3 times per week)',
-        'Occasionally (1–2 times per week)',
-        'No, rarely or never',
+        {
+          value: 'yes_regular',
+          label: {
+            en: 'Yes, regularly (>= 3 times per week)',
+            es: 'Sí, regularmente (>= 3 veces por semana)'
+          },
+        },
+        {
+          value: 'occasionally',
+          label: {
+            en: 'Occasionally (1-2 times per week)',
+            es: 'Ocasionalmente (1-2 veces por semana)'
+          },
+        },
+        {
+          value: 'no_rarely',
+          label: {
+            en: 'No, rarely or never',
+            es: 'No, rara vez o nunca'
+          },
+        },
       ],
     },
     {
       id: 'activity_type',
-      text: 'What type of physical activity do you usually do?',
+      text: {
+        en: 'What type of physical activity do you usually do?',
+        es: '¿Qué tipo de actividad física sueles hacer?'
+      },
       type: 'textarea',
       required: false,
-      placeholder: 'Optional',
+      placeholder: {
+        en: 'Optional',
+        es: 'Opcional'
+      },
     },
     {
       id: 'plank_frequency',
-      text: 'Do you regularly perform planks?',
+      text: {
+        en: 'Do you regularly perform planks?',
+        es: '¿Realizas planchas con regularidad?'
+      },
       type: 'radio',
       options: [
-        'Yes, regularly (≥ 3 times per week)',
-        'Occasionally (1–2 times per week)',
-        'No, rarely or never',
+        {
+          value: 'yes_regular',
+          label: {
+            en: 'Yes, regularly (>= 3 times per week)',
+            es: 'Sí, regularmente (>= 3 veces por semana)'
+          },
+        },
+        {
+          value: 'occasionally',
+          label: {
+            en: 'Occasionally (1-2 times per week)',
+            es: 'Ocasionalmente (1-2 veces por semana)'
+          },
+        },
+        {
+          value: 'no_rarely',
+          label: {
+            en: 'No, rarely or never',
+            es: 'No, rara vez o nunca'
+          },
+        },
       ],
     },
   ],
@@ -67,30 +115,57 @@ const EXPERIMENT_CONFIG = {
   preTasks: [
     {
       id: 'energy_pre_plank',
-      text: 'After the assigned audio began, but before you started the plank, how physically energized did you feel?',
+      text: {
+        en: 'After the assigned audio began, but before you started the plank, how physically energized did you feel?',
+        es: 'Después de que comenzó el audio asignado, pero antes de iniciar la plancha, ¿qué tan energizado físicamente te sentiste?'
+      },
       type: 'scale',
       min: 1,
       max: 7,
-      minLabel: 'Extremely low energy',
-      maxLabel: 'Extremely high energy',
+      minLabel: {
+        en: 'Extremely low energy',
+        es: 'Energía extremadamente baja'
+      },
+      maxLabel: {
+        en: 'Extremely high energy',
+        es: 'Energía extremadamente alta'
+      },
     },
     {
       id: 'motivation_pre_plank',
-      text: 'After the assigned audio began, but before you started the plank, how motivated were you to perform well on the task?',
+      text: {
+        en: 'After the assigned audio began, but before you started the plank, how motivated were you to perform well on the task?',
+        es: 'Después de que comenzó el audio asignado, pero antes de iniciar la plancha, ¿qué tan motivado estabas para rendir bien en la tarea?'
+      },
       type: 'scale',
       min: 1,
       max: 7,
-      minLabel: 'Not at all motivated',
-      maxLabel: 'Extremely motivated',
+      minLabel: {
+        en: 'Not at all motivated',
+        es: 'Nada motivado'
+      },
+      maxLabel: {
+        en: 'Extremely motivated',
+        es: 'Extremadamente motivado'
+      },
     },
     {
       id: 'music_liking',
-      text: 'How much do you like this session\'s audio so far?',
+      text: {
+        en: 'How much do you like this session\'s audio so far?',
+        es: 'Hasta ahora, ¿qué tanto te está gustando el audio de esta sesión?'
+      },
       type: 'scale',
       min: 1,
       max: 7,
-      minLabel: 'Strongly dislike',
-      maxLabel: 'Love it',
+      minLabel: {
+        en: 'Strongly dislike',
+        es: 'Me desagrada mucho'
+      },
+      maxLabel: {
+        en: 'Love it',
+        es: 'Me encanta'
+      },
     },
   ],
 
@@ -98,32 +173,59 @@ const EXPERIMENT_CONFIG = {
   postTasksPart1: [
     {
       id: 'rpe',
-      text: 'Immediately after completing the plank, how hard did the exercise feel overall? (0 = no exertion at all; 5 = somewhat hard; 10 = maximal exertion — the hardest effort you could sustain.)',
+      text: {
+        en: 'Immediately after completing the plank, how hard did the exercise feel overall? (0 = no exertion at all; 5 = somewhat hard; 10 = maximal exertion - the hardest effort you could sustain.)',
+        es: 'Inmediatamente después de completar la plancha, ¿qué tan exigente se sintió el ejercicio en general? (0 = ningún esfuerzo; 5 = algo difícil; 10 = esfuerzo máximo, el más intenso que podrías sostener.)'
+      },
       type: 'scale',
       min: 0,
       max: 10,
-      minLabel: 'No exertion at all',
-      maxLabel: 'Maximal exertion',
+      minLabel: {
+        en: 'No exertion at all',
+        es: 'Ningún esfuerzo'
+      },
+      maxLabel: {
+        en: 'Maximal exertion',
+        es: 'Esfuerzo máximo'
+      },
     },
     {
       id: 'headphones',
-      text: 'Did you use headphones during the plank exercise?',
+      text: {
+        en: 'Did you use headphones during the plank exercise?',
+        es: '¿Usaste audífonos durante el ejercicio de plancha?'
+      },
       type: 'radio',
-      options: ['Yes', 'No'],
+      options: [
+        { value: 'yes', label: { en: 'Yes', es: 'Sí' } },
+        { value: 'no', label: { en: 'No', es: 'No' } },
+      ],
     },
     {
       id: 'plank_pause',
-      text: 'Did you pause or restart the plank at any point?',
+      text: {
+        en: 'Did you pause or restart the plank at any point?',
+        es: '¿Pausaste o reiniciaste la plancha en algún momento?'
+      },
       type: 'radio',
-      options: ['Yes', 'No'],
+      options: [
+        { value: 'yes', label: { en: 'Yes', es: 'Sí' } },
+        { value: 'no', label: { en: 'No', es: 'No' } },
+      ],
     },
     {
       id: 'plank_pause_detail',
-      text: 'If yes, please briefly describe what happened',
+      text: {
+        en: 'If yes, please briefly describe what happened',
+        es: 'Si la respuesta es sí, describe brevemente qué ocurrió'
+      },
       type: 'textarea',
       required: true,
-      showIf: { questionId: 'plank_pause', equals: 'Yes' },
-      placeholder: 'Describe briefly…',
+      showIf: { questionId: 'plank_pause', equals: 'yes' },
+      placeholder: {
+        en: 'Describe briefly...',
+        es: 'Descríbelo brevemente...'
+      },
     },
   ],
 
@@ -131,30 +233,57 @@ const EXPERIMENT_CONFIG = {
   postTasksSession2Extra: [
     {
       id: 'instructions_ease',
-      text: 'How easy was it for you to follow the instructions provided in the study website (including the plank and audio steps)?',
+      text: {
+        en: 'How easy was it for you to follow the instructions provided in the study website (including the plank and audio steps)?',
+        es: '¿Qué tan fácil te resultó seguir las instrucciones del sitio del estudio (incluyendo los pasos de audio y plancha)?'
+      },
       type: 'scale',
       min: 1,
       max: 5,
-      minLabel: 'Very difficult',
-      maxLabel: 'Very easy',
+      minLabel: {
+        en: 'Very difficult',
+        es: 'Muy difícil'
+      },
+      maxLabel: {
+        en: 'Very easy',
+        es: 'Muy fácil'
+      },
     },
     {
       id: 'overall_experience',
-      text: 'How would you rate your overall experience participating in this study?',
+      text: {
+        en: 'How would you rate your overall experience participating in this study?',
+        es: '¿Cómo calificarías tu experiencia general al participar en este estudio?'
+      },
       type: 'scale',
       min: 1,
       max: 5,
-      minLabel: 'Very negative',
-      maxLabel: 'Very positive',
+      minLabel: {
+        en: 'Very negative',
+        es: 'Muy negativa'
+      },
+      maxLabel: {
+        en: 'Very positive',
+        es: 'Muy positiva'
+      },
     },
     {
       id: 'music_effect_overall',
-      text: 'Across the two sessions, how much do you think the assigned audio influenced your plank performance?',
+      text: {
+        en: 'Across the two sessions, how much do you think the assigned audio influenced your plank performance?',
+        es: 'Considerando las dos sesiones, ¿cuánto crees que el audio asignado influyó en tu rendimiento en la plancha?'
+      },
       type: 'scale',
       min: 1,
       max: 5,
-      minLabel: 'Not at all',
-      maxLabel: 'A great deal',
+      minLabel: {
+        en: 'Not at all',
+        es: 'Nada'
+      },
+      maxLabel: {
+        en: 'A great deal',
+        es: 'Muchísimo'
+      },
     },
   ],
 
@@ -162,18 +291,46 @@ const EXPERIMENT_CONFIG = {
   postTasksPart2: [
     {
       id: 'volume_clear',
-      text: 'Were the audio volume instructions clear?',
+      text: {
+        en: 'Were the audio volume instructions clear?',
+        es: '¿Fueron claras las instrucciones sobre el volumen del audio?'
+      },
       type: 'radio',
-      options: ['Yes', 'Somewhat', 'No'],
+      options: [
+        { value: 'yes', label: { en: 'Yes', es: 'Sí' } },
+        { value: 'somewhat', label: { en: 'Somewhat', es: 'Más o menos' } },
+        { value: 'no', label: { en: 'No', es: 'No' } },
+      ],
     },
     {
       id: 'form_quality',
-      text: 'How would you describe your form during the plank?',
+      text: {
+        en: 'How would you describe your form during the plank?',
+        es: '¿Cómo describirías tu forma durante la plancha?'
+      },
       type: 'radio',
       options: [
-        'Maintained proper form throughout',
-        'Mostly good — minor breaks corrected',
-        'Form failed — I stopped due to form breakdown',
+        {
+          value: 'maintained_proper_form',
+          label: {
+            en: 'Maintained proper form throughout',
+            es: 'Mantuve la forma correcta durante toda la plancha'
+          },
+        },
+        {
+          value: 'mostly_good_minor_breaks',
+          label: {
+            en: 'Mostly good - minor breaks corrected',
+            es: 'Mayormente buena; corregí pequeñas interrupciones'
+          },
+        },
+        {
+          value: 'form_failed_stopped',
+          label: {
+            en: 'Form failed - I stopped due to form breakdown',
+            es: 'La forma se perdió; me detuve por la mala ejecución'
+          },
+        },
       ],
     },
   ],

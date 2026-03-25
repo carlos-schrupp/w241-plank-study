@@ -3,10 +3,14 @@
 // Used by both registration and post-session scheduling
 // =============================================================
 
-function getSessionUrl(email, sessionNum) {
+function getSessionUrl(email, sessionNum, locale) {
   const base = window.location.origin +
     window.location.pathname.replace(/[^/]*$/, '');
-  return `${base}session.html?email=${encodeURIComponent(email)}&session=${sessionNum}`;
+  const pageName =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.pagePath('session', locale)
+      : 'session.html';
+  return `${base}${pageName}?email=${encodeURIComponent(email)}&session=${sessionNum}`;
 }
 
 function localDateTimeValueToIso(value) {
@@ -15,11 +19,15 @@ function localDateTimeValueToIso(value) {
   return Number.isNaN(dt.getTime()) ? '' : dt.toISOString();
 }
 
-function formatStudyDateTime(value) {
+function formatStudyDateTime(value, locale) {
   if (!value) return '';
   const dt = new Date(value);
   if (Number.isNaN(dt.getTime())) return '';
-  return dt.toLocaleString([], {
+  const localeTag =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.localeTag(locale)
+      : undefined;
+  return dt.toLocaleString(localeTag, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -47,11 +55,19 @@ function buildGoogleCalendarUrl({ title, description, startDate, durationMinutes
   return `https://calendar.google.com/calendar/render?${params}`;
 }
 
-function buildICSBlob({ title, description, startDate, durationMinutes, uid }) {
+function buildICSBlob({ title, description, startDate, durationMinutes, uid, locale }) {
   const start = new Date(startDate);
   const end = new Date(start.getTime() + durationMinutes * 60000);
   const now = new Date();
   const safeDesc = (description || '').replace(/\n/g, '\\n').replace(/,/g, '\\,');
+  const alarmTomorrow =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.t('calendar.alarmTomorrow', {}, locale)
+      : 'Physical Performance Study session reminder - tomorrow';
+  const alarmHour =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.t('calendar.alarmHour', {}, locale)
+      : 'Physical Performance Study session in 1 hour';
   const content = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -66,12 +82,12 @@ function buildICSBlob({ title, description, startDate, durationMinutes, uid }) {
     'BEGIN:VALARM',
     'TRIGGER:-PT24H',
     'ACTION:DISPLAY',
-    'DESCRIPTION:Physical Performance Study session reminder — tomorrow',
+    `DESCRIPTION:${alarmTomorrow}`,
     'END:VALARM',
     'BEGIN:VALARM',
     'TRIGGER:-PT1H',
     'ACTION:DISPLAY',
-    'DESCRIPTION:Physical Performance Study session in 1 hour',
+    `DESCRIPTION:${alarmHour}`,
     'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR',
@@ -90,14 +106,26 @@ function triggerICSDownload(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
-function renderDirectSessionLink(container, { email, sessionNum, buttonLabel, note }) {
-  const sessionUrl = getSessionUrl(email, sessionNum);
+function renderDirectSessionLink(container, { email, sessionNum, buttonLabel, note, locale }) {
+  const activeLocale =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.normalizeLocale(locale || APP_I18N.locale())
+      : 'en';
+  const sessionUrl = getSessionUrl(email, sessionNum, activeLocale);
+  const linkTitle =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.t('calendar.directLinkTitle', {}, activeLocale)
+      : 'Direct session link';
+  const defaultButtonLabel =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.t('calendar.openSession', { num: sessionNum }, activeLocale)
+      : `Open Session ${sessionNum}`;
   container.innerHTML = `
     <div class="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-      <p class="text-blue-300 text-xs font-medium uppercase tracking-wider mb-1">Direct session link</p>
+      <p class="text-blue-300 text-xs font-medium uppercase tracking-wider mb-1">${linkTitle}</p>
       <a href="${sessionUrl}"
          class="btn-primary inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold w-full">
-        ${buttonLabel || `Open Session ${sessionNum}`}
+        ${buttonLabel || defaultButtonLabel}
       </a>
       <p class="text-slate-400 text-xs mt-3 break-all">${sessionUrl}</p>
       ${note ? `<p class="text-slate-400 text-xs mt-2">${note}</p>` : ''}
@@ -110,17 +138,26 @@ function renderDirectSessionLink(container, { email, sessionNum, buttonLabel, no
  * @param {HTMLElement} container
  * @param {{ email: string, sessionNum: number, scheduledDateTime: string|Date }} opts
  */
-function renderCalendarLinks(container, { email, sessionNum, scheduledDateTime }) {
+function renderCalendarLinks(container, { email, sessionNum, scheduledDateTime, locale }) {
+  const activeLocale =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.normalizeLocale(locale || APP_I18N.locale())
+      : 'en';
   const studyTitle =
-    typeof EXPERIMENT_CONFIG !== 'undefined' && EXPERIMENT_CONFIG.studyTitle
-      ? EXPERIMENT_CONFIG.studyTitle
-      : 'Physical Performance Study';
-  const title = `${studyTitle} — Session ${sessionNum}`;
-  const sessionUrl = getSessionUrl(email, sessionNum);
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.t('study.title', {}, activeLocale)
+      : ((typeof EXPERIMENT_CONFIG !== 'undefined' && EXPERIMENT_CONFIG.studyTitle)
+        ? EXPERIMENT_CONFIG.studyTitle
+        : 'Physical Performance Study');
+  const title =
+    typeof APP_I18N !== 'undefined'
+      ? APP_I18N.t('calendar.eventTitle', { studyTitle, num: sessionNum }, activeLocale)
+      : `${studyTitle} - Session ${sessionNum}`;
+  const sessionUrl = getSessionUrl(email, sessionNum, activeLocale);
   const description =
-    `${studyTitle} — Session ${sessionNum}\n\n` +
-    `When it's time, open this link:\n${sessionUrl}\n\n` +
-    `Remember: wear comfortable clothing and have space for a forearm plank.`;
+    `${title}\n\n` +
+    `${APP_I18N.t('calendar.descriptionOpenLink', {}, activeLocale)}\n${sessionUrl}\n\n` +
+    `${APP_I18N.t('calendar.descriptionReminder', {}, activeLocale)}`;
 
   const gcalUrl = buildGoogleCalendarUrl({
     title,
@@ -135,23 +172,24 @@ function renderCalendarLinks(container, { email, sessionNum, scheduledDateTime }
     startDate: scheduledDateTime,
     durationMinutes: 30,
     uid: `physical-performance-study-${email}-s${sessionNum}@study`,
+    locale: activeLocale,
   });
 
   container.innerHTML = `
-    <p class="text-sm text-slate-500 mb-3">Add Session ${sessionNum} to your calendar:</p>
+    <p class="text-sm text-slate-500 mb-3">${APP_I18N.t('calendar.addPrompt', { num: sessionNum }, activeLocale)}</p>
     <div class="flex flex-col gap-3">
       <a id="cal-gcal" href="${gcalUrl}" target="_blank" rel="noopener"
          class="btn-primary flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold">
-        Add to Google Calendar
+        ${APP_I18N.t('calendar.addGoogle', {}, activeLocale)}
       </a>
       <button id="cal-ics"
          class="btn-outline flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold">
-        Download for Apple / Outlook Calendar
+        ${APP_I18N.t('calendar.addAppleOutlook', {}, activeLocale)}
       </button>
     </div>
     <p class="text-xs text-slate-400 mt-3 leading-relaxed">
-      Reminders are set for 24 hours and 1 hour before your session.<br>
-      Your direct session link is embedded in the calendar event.
+      ${APP_I18N.t('calendar.reminderInfo', {}, activeLocale)}<br>
+      ${APP_I18N.t('calendar.reminderEmbedded', {}, activeLocale)}
     </p>
   `;
 

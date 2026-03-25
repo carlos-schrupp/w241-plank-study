@@ -4,10 +4,69 @@ This repository contains a mobile-first web app for running a two-session physic
 
 The app uses:
 
-- Static frontend pages: [index.html](index.html) and [session.html](session.html)
-- Shared client logic in [js/config.js](js/config.js), [js/calendar.js](js/calendar.js), and [js/session.js](js/session.js)
+- Static frontend pages: [index.html](index.html), [session.html](session.html), [index_es.html](index_es.html), and [session_es.html](session_es.html)
+- Shared client logic in [js/config.js](js/config.js), [js/calendar.js](js/calendar.js), [js/session.js](js/session.js), [js/registration.js](js/registration.js), and [js/i18n.js](js/i18n.js)
 - A Google Apps Script backend in [apps-script/Code.gs](apps-script/Code.gs)
 - Google Sheets for participant/session data and Google Drive for optional contact-sheet uploads
+
+## Language Versions
+
+The app now supports two participant-facing language flows:
+
+- English registration: [index.html](index.html)
+- English sessions: [session.html](session.html)
+- Spanish registration: [index_es.html](index_es.html)
+- Spanish sessions: [session_es.html](session_es.html)
+
+English remains the default GitHub Pages entry point. The English registration page includes a visible link to the Spanish version.
+
+The selected language is stored as a participant `locale` so that:
+
+- Direct session links stay in the same language
+- Calendar links stay in the same language
+- Opt-in emails stay in the same language
+- Duplicate registration lookups and resends continue in the selected language
+
+## Manual Spreadsheet Update For Locale
+
+If you are keeping your existing spreadsheet instead of deleting tabs, you must add the new `locale` column manually before using the bilingual flow.
+
+### Sheet 1: `participants`
+
+Add a header named:
+
+- `locale`
+
+Recommended value for existing English participants:
+
+- fill all existing rows with `en`
+
+Recommended position:
+
+- after `email_opt_in`
+
+### Sheet 2: `registration_attempts`
+
+Add a header named:
+
+- `locale`
+
+Recommended value for existing rows:
+
+- fill existing rows with `en` if they came from the English site
+- otherwise you can leave old historical rows blank
+
+Recommended position:
+
+- after `email_opt_in`
+
+### Important Notes
+
+- The exact column order does not matter, but the header spelling must match exactly: `locale`
+- New English registrations will write `en`
+- New Spanish registrations will write `es`
+- Existing sheets are not auto-migrated by the backend
+- After updating the sheet headers, save and redeploy the Apps Script web app
 
 ## What The App Does
 
@@ -87,7 +146,7 @@ flowchart TD
 
 ### 1. Registration
 
-Participants land on [index.html](index.html) and see:
+Participants land on [index.html](index.html) for English or [index_es.html](index_es.html) for Spanish and see:
 
 - Study title: `Physical Performance Study`
 - Trust line: `UC Berkeley student research study`
@@ -131,7 +190,7 @@ After successful enrollment or duplicate detection, the success state can show:
 
 ### 4. Session Entry Rules
 
-Participants open `session.html?email=...&session=N`.
+Participants open `session.html?email=...&session=N` for English or `session_es.html?email=...&session=N` for Spanish.
 
 On load, [js/session.js](js/session.js):
 
@@ -179,7 +238,7 @@ After Session 2 submission, the participant sees:
 
 ## Registration Questions And Options
 
-The registration form is defined directly in [index.html](index.html).
+The registration markup lives in [index.html](index.html) and [index_es.html](index_es.html), with shared logic in [js/registration.js](js/registration.js).
 
 | Order | Field | Type | Required | Options / Notes |
 |---|---|---|---|---|
@@ -203,7 +262,7 @@ The registration form is defined directly in [index.html](index.html).
 
 ## Session Flow Details
 
-The session experience is implemented in [session.html](session.html) and [js/session.js](js/session.js).
+The session experience is implemented in [session.html](session.html), [session_es.html](session_es.html), and [js/session.js](js/session.js).
 
 ### Step 1: Safety Check
 
@@ -518,9 +577,13 @@ Backend constants that must stay aligned are in [apps-script/Code.gs](apps-scrip
 | Path | Purpose |
 |---|---|
 | [index.html](index.html) | Registration flow and registration success state |
+| [index_es.html](index_es.html) | Spanish registration flow and registration success state |
 | [session.html](session.html) | Guided session flow |
+| [session_es.html](session_es.html) | Guided session flow in Spanish |
 | [js/config.js](js/config.js) | Study configuration and all dynamic survey question definitions |
+| [js/i18n.js](js/i18n.js) | Shared English/Spanish copy helpers and locale routing |
 | [js/calendar.js](js/calendar.js) | Direct session link generation, time formatting, calendar actions |
+| [js/registration.js](js/registration.js) | Shared registration logic for English and Spanish pages |
 | [js/session.js](js/session.js) | Session state machine, validation, timer, camera flow, submissions |
 | [apps-script/Code.gs](apps-script/Code.gs) | Apps Script backend, sheet creation, email sending, session persistence |
 | [assets/img/plank_form.png](assets/img/plank_form.png) | Form illustration shown in instructions |

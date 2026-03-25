@@ -9,6 +9,7 @@ var S = {
   participant:  null,  // data from Apps Script GET
   track:        null,  // { id, label, youtubeId }
   currentStep:  null,
+  locale:       null,
 
   // YouTube
   ytPlayer:     null,
@@ -70,6 +71,31 @@ function getProgressSteps() {
 
 function $(id) { return document.getElementById(id); }
 
+function activeLocale() {
+  return APP_I18N.normalizeLocale(S.locale || APP_I18N.locale());
+}
+
+function t(path, vars) {
+  return APP_I18N.t(path, vars, activeLocale());
+}
+
+function localize(value) {
+  return APP_I18N.text(value, activeLocale());
+}
+
+function optionValue(opt) {
+  return opt && typeof opt === 'object' && Object.prototype.hasOwnProperty.call(opt, 'value')
+    ? opt.value
+    : opt;
+}
+
+function optionLabel(opt) {
+  if (opt && typeof opt === 'object' && Object.prototype.hasOwnProperty.call(opt, 'label')) {
+    return localize(opt.label);
+  }
+  return localize(opt);
+}
+
 function refreshMainStepBanner(stepName) {
   var el = $('step-' + stepName);
   if (!el) return;
@@ -78,7 +104,9 @@ function refreshMainStepBanner(stepName) {
   var steps = getProgressSteps();
   var idx = steps.indexOf(stepName);
   if (idx < 0) return;
-  b.textContent = 'Step ' + (idx + 1) + ' of ' + steps.length;
+  b.textContent = activeLocale() === 'es'
+    ? 'Paso ' + (idx + 1) + ' de ' + steps.length
+    : 'Step ' + (idx + 1) + ' of ' + steps.length;
 }
 
 function showStep(name) {
@@ -129,7 +157,7 @@ function updatePostPlankAudioControls(stepName) {
   var shouldShow = isPostPlankStep(stepName) && (!!S.ytPlayer || S.audioStopped);
   bar.classList.toggle('hidden', !shouldShow);
   btn.disabled = !S.ytPlayer || S.audioStopped;
-  btn.textContent = S.audioStopped ? 'Audio stopped' : 'Stop audio';
+  btn.textContent = S.audioStopped ? t('common.audioStopped') : t('common.stopAudio');
 }
 
 function stopStudyAudio() {
@@ -397,7 +425,7 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
 
     var label = document.createElement('p');
     label.className = 'text-white text-sm font-medium mb-3 leading-snug';
-    label.textContent = q.text;
+    label.textContent = localize(q.text);
     wrapper.appendChild(label);
 
     if (q.type === 'scale') {
@@ -424,7 +452,7 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
       }
       var labRow = document.createElement('div');
       labRow.className = 'flex justify-between text-xs text-slate-500 mt-1 gap-2';
-      labRow.innerHTML = '<span>' + q.minLabel + '</span><span>' + q.maxLabel + '</span>';
+      labRow.innerHTML = '<span>' + localize(q.minLabel) + '</span><span>' + localize(q.maxLabel) + '</span>';
       wrapper.appendChild(row);
       wrapper.appendChild(labRow);
 
@@ -432,17 +460,18 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
       var optList = document.createElement('div');
       optList.className = 'flex flex-col gap-2';
       q.options.forEach(function (opt) {
+        var value = optionValue(opt);
         var btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'radio-btn';
-        if (answersObj[q.id] === opt) btn.classList.add('selected');
-        btn.textContent = opt;
+        if (answersObj[q.id] === value) btn.classList.add('selected');
+        btn.textContent = optionLabel(opt);
         btn.addEventListener('click', function () {
           optList.querySelectorAll('.radio-btn').forEach(function (b) {
             b.classList.remove('selected');
           });
           btn.classList.add('selected');
-          answersObj[q.id] = opt;
+          answersObj[q.id] = value;
           bump();
         });
         optList.appendChild(btn);
@@ -454,8 +483,10 @@ function renderQuestions(questions, containerId, answersObj, onChangeCallback) {
       ta.rows = 3;
       ta.placeholder =
         q.placeholder !== undefined && q.placeholder !== null
-          ? q.placeholder
-          : 'Optional — leave blank to skip';
+          ? localize(q.placeholder)
+          : (activeLocale() === 'es'
+            ? 'Opcional. Déjalo en blanco para omitirlo.'
+            : 'Optional - leave blank to skip');
       if (answersObj[q.id]) ta.value = answersObj[q.id];
       ta.className = 'w-full bg-slate-700 border border-slate-600 text-white placeholder-slate-500 ' +
         'rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-blue-500';
@@ -500,8 +531,12 @@ function buildPostTasksForSession(sessionNum) {
   });
   var commentText =
     sessionNum === 2
-      ? 'Do you have any comments or suggestions about your experience in this study? (optional)'
-      : 'Any other comments about this session? (optional)';
+      ? (activeLocale() === 'es'
+        ? '¿Tienes comentarios o sugerencias sobre tu experiencia en este estudio? (opcional)'
+        : 'Do you have any comments or suggestions about your experience in this study? (optional)')
+      : (activeLocale() === 'es'
+        ? '¿Algún otro comentario sobre esta sesión? (opcional)'
+        : 'Any other comments about this session? (optional)');
   list.push({
     id: 'comments',
     text: commentText,
@@ -556,10 +591,10 @@ async function saveNextSessionSchedule(nextSessionNum) {
   var err = $('schedule-error');
   var emailStatus = $('next-email-status');
   var scheduledAt = localDateTimeValueToIso(input.value);
-  var scheduledLabel = scheduledAt ? formatStudyDateTime(scheduledAt) : '';
+  var scheduledLabel = scheduledAt ? formatStudyDateTime(scheduledAt, activeLocale()) : '';
 
   if (!scheduledAt) {
-    err.textContent = 'Please choose a valid date and time for Session ' + nextSessionNum + '.';
+    err.textContent = t('session.errors.chooseValidSchedule', { num: nextSessionNum });
     err.classList.remove('hidden');
     return;
   }
@@ -567,7 +602,7 @@ async function saveNextSessionSchedule(nextSessionNum) {
   err.classList.add('hidden');
   emailStatus.className = 'hidden text-xs rounded-xl px-4 py-3 mb-4';
   btn.disabled = true;
-  btn.textContent = 'Saving Session ' + nextSessionNum + '...';
+  btn.textContent = t('session.scheduleSaving', { num: nextSessionNum });
 
   try {
     var res = await apiPost({
@@ -578,45 +613,47 @@ async function saveNextSessionSchedule(nextSessionNum) {
       scheduledLabel: scheduledLabel,
       emailOptIn: emailToggle.checked,
       contactEmail: EXPERIMENT_CONFIG.researcherEmail,
+      locale: activeLocale(),
     });
 
     if (res.error) throw new Error(res.error);
 
     S.participant['session' + nextSessionNum + 'PlannedAt'] = res.scheduledAt;
     S.participant.emailOptIn = res.emailOptIn;
+    S.participant.locale = activeLocale();
     S.nextSessionScheduledAt = res.scheduledAt;
-    $('schedule-note').textContent =
-      'Session ' + nextSessionNum + ' is scheduled. Save the link below and use it when it is time.';
+    $('schedule-note').textContent = t('session.scheduleSaved', { num: nextSessionNum });
 
     renderDirectSessionLink(
       $('next-link-container'),
       {
         email: S.email,
         sessionNum: nextSessionNum,
-        buttonLabel: 'Open Session ' + nextSessionNum,
-        note: 'You can use this link directly if your calendar reminder fails.',
+        locale: activeLocale(),
+        buttonLabel: t('common.openSession', { num: nextSessionNum }),
+        note: t('session.scheduleDirectLinkNote'),
       }
     );
     renderCalendarLinks(
       $('next-calendar-links'),
-      { email: S.email, sessionNum: nextSessionNum, scheduledDateTime: res.scheduledAt }
+      { email: S.email, sessionNum: nextSessionNum, scheduledDateTime: res.scheduledAt, locale: activeLocale() }
     );
 
     if (res.emailSent) {
-      emailStatus.textContent = 'We sent your Session ' + nextSessionNum + ' link to ' + S.email + '.';
+      emailStatus.textContent = t('session.scheduleEmailSent', { num: nextSessionNum, email: S.email });
       emailStatus.classList.remove('hidden');
       emailStatus.classList.add('bg-emerald-500/10', 'text-emerald-200', 'border', 'border-emerald-500/30');
     } else if (emailToggle.checked && res.emailError) {
-      emailStatus.textContent = 'We could not send the email, but your direct link is shown below.';
+      emailStatus.textContent = t('session.scheduleEmailFailed');
       emailStatus.classList.remove('hidden');
       emailStatus.classList.add('bg-amber-500/10', 'text-amber-200', 'border', 'border-amber-500/30');
     }
   } catch (e) {
-    err.textContent = 'Could not save Session ' + nextSessionNum + ': ' + e.message;
+    err.textContent = t('session.errors.saveScheduleFailed', { num: nextSessionNum, message: e.message });
     err.classList.remove('hidden');
   } finally {
     btn.disabled = !input.value;
-    btn.textContent = 'Confirm Session ' + nextSessionNum + ' schedule';
+    btn.textContent = t('session.scheduleConfirm', { num: nextSessionNum });
   }
 }
 
@@ -633,9 +670,10 @@ async function init() {
   var params = new URLSearchParams(window.location.search);
   S.email      = params.get('email');
   S.sessionNum = parseInt(params.get('session'), 10);
+  S.locale = APP_I18N.locale();
 
   if (!S.email || !S.sessionNum) {
-    showError('Missing session parameters. Please use the link from your calendar event.');
+    showError(t('session.errors.missingParams'));
     return;
   }
 
@@ -643,12 +681,13 @@ async function init() {
   try {
     var data = await apiGet({ email: S.email });
     if (!data.found) {
-      showError('Email not found. Please register first.');
+      showError(t('session.errors.emailNotFound'));
       return;
     }
     S.participant = data;
+    S.locale = APP_I18N.normalizeLocale(window.APP_LOCALE || data.locale || 'en');
   } catch (e) {
-    showError('Could not load your participant data. Check your connection and reload.');
+    showError(t('session.errors.loadFailed'));
     return;
   }
 
@@ -657,16 +696,15 @@ async function init() {
   var total     = EXPERIMENT_CONFIG.numSessions;
 
   if (S.sessionNum <= completed) {
-    showError(
-      'You have already submitted Session ' + S.sessionNum + '. ' +
-      (completed < total ? 'Please use your Session ' + (completed + 1) + ' link.' : 'You have completed all sessions — thank you!')
-    );
+    var alreadySubmitted = t('session.errors.alreadySubmitted', { num: S.sessionNum }) + ' ' +
+      (completed < total
+        ? t('session.errors.useNextSession', { num: completed + 1 })
+        : t('session.errors.allComplete'));
+    showError(alreadySubmitted);
     return;
   }
   if (S.sessionNum > completed + 1) {
-    showError(
-      'Please complete Session ' + (completed + 1) + ' first.'
-    );
+    showError(t('session.errors.completeFirst', { num: completed + 1 }));
     return;
   }
 
@@ -686,13 +724,9 @@ function setInstructionsAudioHint() {
   var el = $('instructions-audio-hint');
   if (!el) return;
   if (S.sessionNum === 1) {
-    el.textContent =
-      'Audio will start after a short “About your activity” step (Session 1 only). ' +
-      'After audio begins, you will answer a few quick questions — then you will start the plank.';
+    el.textContent = t('session.instructionsHintSession1');
   } else {
-    el.textContent =
-      'Audio will begin on the next screen. There will be a short lead-in ' +
-      'during which you will answer a few quick questions — then you will start the plank.';
+    el.textContent = t('session.instructionsHintLater');
   }
 }
 
@@ -703,22 +737,16 @@ function setInstructionsAudioHint() {
 function setupSafetyStep() {
   $('safety-email').textContent = S.email;
   $('safety-session-label').textContent =
-    'Session ' + S.sessionNum + ' of ' + EXPERIMENT_CONFIG.numSessions;
+    t('session.safetySessionLabel', { num: S.sessionNum, total: EXPERIMENT_CONFIG.numSessions });
 
   var reminderEl = $('safety-email-reminder');
   var reminderText;
   if (S.sessionNum === 1) {
-    reminderText =
-      'Important: Use the same email address you used when you registered ' +
-      '(your session link should already match your account).';
+    reminderText = t('session.safetyReminder1');
   } else if (S.sessionNum === 2) {
-    reminderText =
-      'Important: Use the same email address you used when you registered and completed Session 1 ' +
-      '(your session link should already match your account).';
+    reminderText = t('session.safetyReminder2');
   } else {
-    reminderText =
-      'Important: Use the same email address you used when you registered and for each previous session ' +
-      '(your session link should already match your account).';
+    reminderText = t('session.safetyReminderLater');
   }
   reminderEl.textContent = reminderText;
 
@@ -785,12 +813,12 @@ function setupAudioStep() {
   S.audioStopped = false;
   updatePostPlankAudioControls(S.currentStep);
   $('audio-track-label').textContent =
-    'Assigned audio for this session: ' + S.track.label;
+    t('session.audioAssignedLabel', { label: localize(S.track.label) });
 
   var fallbackEl = $('audio-fallback-link');
   var ytUrl = 'https://youtu.be/' + S.track.youtubeId;
   fallbackEl.innerHTML = '<a href="' + ytUrl + '" target="_blank" rel="noopener" class="underline">' +
-    'Open: ' + ytUrl + '</a>';
+    t('session.audioFallbackOpen', { url: ytUrl }) + '</a>';
 
   // Show fallback link after 8 seconds if player hasn't loaded
   var fallbackTimer = setTimeout(function () {
@@ -854,17 +882,17 @@ function setupPreTaskStep() {
       }
       return;
     }
-    camStatus.textContent = 'Requesting camera permission...';
+    camStatus.textContent = t('session.cameraRequesting');
     var ok = await startCamera();
     if (ok) {
       S.photoEnabled = true;
       $('camera-feed').classList.remove('hidden');
-      camStatus.textContent = 'Camera ready. A thumbnail will be captured each second.';
+      camStatus.textContent = t('session.cameraReady');
       camPositioning.classList.remove('hidden');
     } else {
       camToggle.checked = false;
       S.photoEnabled = false;
-      camStatus.textContent = 'Camera permission denied — continuing without it.';
+      camStatus.textContent = t('session.cameraDenied');
       camPositioning.classList.add('hidden');
     }
   });
@@ -942,7 +970,7 @@ function cancelPlankAndReturn() {
 
   if (S.photoEnabled && S.cameraStream) {
     $('camera-feed').classList.remove('hidden');
-    $('camera-status').textContent = 'Camera ready. A thumbnail will be captured each second.';
+    $('camera-status').textContent = t('session.cameraReady');
   }
 
   showStep('pre-task');
@@ -1000,7 +1028,7 @@ function checkPostTaskComplete() {
 async function submitSession(totalSec) {
   $('submit-error').classList.add('hidden');
   showStep('submitting');
-  $('submitting-note').textContent = 'Submitting session data...';
+  $('submitting-note').textContent = t('session.submittingData');
 
   var preTasksPayload =
     S.sessionNum === 1
@@ -1025,7 +1053,7 @@ async function submitSession(totalSec) {
     S.participant.sessionsCompleted = sessionRes.sessionsCompleted;
   } catch (e) {
     showStep('post-task');
-    $('submit-error').textContent = 'Submission failed: ' + e.message + '. Please try again.';
+    $('submit-error').textContent = t('session.errors.submissionFailed', { message: e.message });
     $('submit-error').classList.remove('hidden');
     $('btn-submit').disabled = false;
     return;
@@ -1033,11 +1061,11 @@ async function submitSession(totalSec) {
 
   // 2. Upload contact sheet if photo capture was used
   if (S.photoEnabled && S.frames.length > 0) {
-    $('submitting-note').textContent = 'Building photo contact sheet...';
+    $('submitting-note').textContent = t('session.buildingSheet');
     try {
       var sheetDataUrl = await buildContactSheet(S.frames);
       if (sheetDataUrl) {
-        $('submitting-note').textContent = 'Uploading contact sheet...';
+        $('submitting-note').textContent = t('session.uploadingSheet');
         await apiPost({
           action:      'upload_photo',
           email:       S.email,
@@ -1065,8 +1093,7 @@ async function submitSession(totalSec) {
 function showScheduleStep() {
   var nextNum = S.sessionsCompleted + 1;
   $('schedule-plank-time').textContent = formatTime(S.elapsedMs);
-  $('schedule-note').textContent =
-    'Now schedule Session ' + nextNum + ' (24 – 72 hours from now).';
+  $('schedule-note').textContent = t('session.scheduleInitial', { num: nextNum });
   $('next-session-num').textContent = nextNum;
   $('next-session-email-num').textContent = nextNum;
   $('next-session-btn-num').textContent = nextNum;
