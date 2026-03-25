@@ -19,8 +19,10 @@ The app supports the full study lifecycle:
 - Optional email delivery of the direct session link
 - Guided, step-by-step session execution
 - Plank timer capture
+- Brief accidental-start return path right after the timer begins
 - Pre-task and post-task survey collection
 - Optional form-verification camera capture
+- Manual audio stop control after the plank
 - Session 2 scheduling after Session 1
 - Final completion and raffle confirmation
 
@@ -155,18 +157,20 @@ Session 1 includes:
 3. Session 1 only activity questions
 4. Audio player
 5. Pre-task questions
-6. Optional camera enable
-7. Plank timer
+6. Optional camera enable with phone-positioning tips
+7. Plank timer with brief accidental-start return option
 8. Post-task questions
-9. Session 2 scheduling
-10. Direct Session 2 link, calendar actions, optional Session 2 email
+9. Manual audio stop available after the plank
+10. Session 2 scheduling
+11. Direct Session 2 link, calendar actions, optional Session 2 email
 
 ### 6. Session 2 Workflow
 
-Session 2 is similar, but skips the Session 1-only activity block and adds two Session 2-only post-task questions:
+Session 2 is similar, but skips the Session 1-only activity block and adds three Session 2-only post-task questions:
 
 - Ease of following instructions
 - Overall experience participating in the study
+- Retrospective perceived audio influence across both sessions
 
 After Session 2 submission, the participant sees:
 
@@ -274,6 +278,7 @@ If enabled:
 
 - The app requests camera permission
 - The front camera is preferred
+- The app shows phone-positioning tips for capturing the full plank posture
 - One image is captured per second
 - The images are stitched into a single contact-sheet image after the plank
 - The contact sheet is uploaded to Google Drive
@@ -287,8 +292,10 @@ The plank step:
 - Uses a full-screen timer
 - Displays elapsed time in `mm:ss.t`
 - Continues until the participant presses `STOP`
+- Includes a brief `Back` option right after the timer starts in case the participant started by mistake
 - Requests a screen wake lock where supported
 - Keeps optional photo capture running while the plank is active
+- Leaves the audio running until the participant manually stops it on a later step
 
 ### Step 7: Post-Task Questions
 
@@ -308,14 +315,12 @@ The post-task form is assembled dynamically from:
 | Did you pause or restart the plank at any point? | Radio | Yes | `Yes`, `No` |
 | If yes, please briefly describe what happened | Textarea | Conditional | Required only if `plank_pause = Yes` |
 | Were the audio volume instructions clear? | Radio | Yes | `Yes`, `Somewhat`, `No` |
-| How did this session's audio affect your plank performance? | Scale | Yes | 1 to 5 |
 | How would you describe your form during the plank? | Radio | Yes | `Maintained proper form throughout`, `Mostly good — minor breaks corrected`, `Form failed — I stopped due to form breakdown` |
 | Comments | Textarea | No | Optional free text |
 
 Scale anchors:
 
 - RPE: `No exertion at all` to `Maximal exertion`
-- Music effect: `Hurt my performance` to `Helped my performance`
 
 #### Session 2 Only Extra Questions
 
@@ -323,11 +328,13 @@ Scale anchors:
 |---|---|---|---|
 | How easy was it for you to follow the instructions provided in the study website (including the plank and audio steps)? | Scale | Yes | 1 to 5 |
 | How would you rate your overall experience participating in this study? | Scale | Yes | 1 to 5 |
+| Across the two sessions, how much do you think the assigned audio influenced your plank performance? | Scale | Yes | 1 to 5 |
 
 Scale anchors:
 
 - Instructions ease: `Very difficult` to `Very easy`
 - Overall experience: `Very negative` to `Very positive`
+- Audio influence: `Not at all` to `A great deal`
 
 ### Step 8: Session 2 Scheduling
 

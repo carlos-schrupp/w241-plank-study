@@ -94,6 +94,25 @@
       background: #991b1b;
       transform: translateX(-50%) scale(0.96);
     }
+    #btn-plank-back {
+      position: fixed;
+      top: calc(env(safe-area-inset-top) + 18px);
+      left: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.85);
+      color: #e2e8f0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      -webkit-tap-highlight-color: transparent;
+    }
+    #btn-plank-back:active {
+      transform: scale(0.96);
+    }
 
     /* ---- Recording indicator ---- */
     #recording-indicator {
@@ -388,6 +407,16 @@
           </label>
         </div>
         <p id="camera-status" class="text-xs mt-2 text-slate-500"></p>
+        <div id="camera-positioning" class="hidden bg-slate-700/50 rounded-xl p-3 mt-3">
+          <p class="text-slate-200 text-xs font-medium mb-2">Phone positioning tips</p>
+          <ul class="text-slate-400 text-xs leading-relaxed list-disc list-inside space-y-1">
+            <li>Place the phone on a stable surface instead of holding it.</li>
+            <li>Use landscape orientation if possible.</li>
+            <li>Set it a few feet away so your full body is visible during the plank.</li>
+            <li>A side or front-side angle works best for form review.</li>
+            <li>Use a bright room so your body position is clearly visible.</li>
+          </ul>
+        </div>
       </div>
 
       <button id="btn-pre-task-next" disabled
@@ -401,6 +430,7 @@
 
   <!-- PLANK STEP — outside scroll container, fixed overlay -->
   <section id="step-plank" class="step">
+    <button id="btn-plank-back" class="hidden" type="button">← Back</button>
     <div id="recording-indicator" class="hidden">
       <div class="rec-dot"></div>
       <span>REC</span>
@@ -511,6 +541,15 @@
     </section>
 
   </div><!-- end second scroll container -->
+
+  <div id="post-plank-audio-bar" class="hidden fixed inset-x-0 bottom-4 px-4 z-40">
+    <div class="max-w-lg mx-auto">
+      <button id="btn-stop-audio" type="button"
+        class="btn-outline w-full rounded-xl py-3 text-sm font-semibold">
+        Stop audio
+      </button>
+    </div>
+  </div>
 
   <!-- Hidden camera elements -->
   <video id="camera-feed" autoplay playsinline muted

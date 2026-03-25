@@ -147,6 +147,15 @@ const EXPERIMENT_CONFIG = {
       minLabel: 'Very negative',
       maxLabel: 'Very positive',
     },
+    {
+      id: 'music_effect_overall',
+      text: 'Across the two sessions, how much do you think the assigned audio influenced your plank performance?',
+      type: 'scale',
+      min: 1,
+      max: 5,
+      minLabel: 'Not at all',
+      maxLabel: 'A great deal',
+    },
   ],
 
   // ---- Post-task: remainder (all sessions), comments added in JS (wording differs S1 vs S2) ----
@@ -156,15 +165,6 @@ const EXPERIMENT_CONFIG = {
       text: 'Were the audio volume instructions clear?',
       type: 'radio',
       options: ['Yes', 'Somewhat', 'No'],
-    },
-    {
-      id: 'music_effect',
-      text: 'How did this session\'s audio affect your plank performance?',
-      type: 'scale',
-      min: 1,
-      max: 5,
-      minLabel: 'Hurt my performance',
-      maxLabel: 'Helped my performance',
     },
     {
       id: 'form_quality',

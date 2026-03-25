@@ -8,11 +8,13 @@ var S = {
   sessionNum:   null,
   participant:  null,  // data from Apps Script GET
   track:        null,  // { id, label, youtubeId }
+  currentStep:  null,
 
   // YouTube
   ytPlayer:     null,
   ytReady:      false,
   ytPlayCalled: false,
+  audioStopped: false,
 
   // Timer
   timerStart:   null,
@@ -40,6 +42,10 @@ var S = {
   sessionId:     null,
   sessionsCompleted: 0,
   nextSessionScheduledAt: null,
+
+  // Plank accidental-start undo window
+  plankBackEnabled: false,
+  plankBackTimer: null,
 };
 
 // ---- Step IDs in order (for progress bar) ----
@@ -76,6 +82,7 @@ function refreshMainStepBanner(stepName) {
 }
 
 function showStep(name) {
+  S.currentStep = name;
   STEPS.forEach(function (s) {
     var el = $('step-' + s);
     if (el) el.classList.remove('active');
@@ -99,6 +106,7 @@ function showStep(name) {
   $('progress-fill').style.width = pct + '%';
 
   refreshMainStepBanner(name);
+  updatePostPlankAudioControls(name);
 
   // Scroll to top
   window.scrollTo({ top: 0 });
@@ -107,6 +115,36 @@ function showStep(name) {
 function showError(msg) {
   $('error-message').textContent = msg;
   showStep('error');
+}
+
+function isPostPlankStep(name) {
+  return name === 'post-task' || name === 'schedule' || name === 'complete';
+}
+
+function updatePostPlankAudioControls(stepName) {
+  var bar = $('post-plank-audio-bar');
+  var btn = $('btn-stop-audio');
+  if (!bar || !btn) return;
+
+  var shouldShow = isPostPlankStep(stepName) && (!!S.ytPlayer || S.audioStopped);
+  bar.classList.toggle('hidden', !shouldShow);
+  btn.disabled = !S.ytPlayer || S.audioStopped;
+  btn.textContent = S.audioStopped ? 'Audio stopped' : 'Stop audio';
+}
+
+function stopStudyAudio() {
+  if (!S.ytPlayer || S.audioStopped) return;
+  try {
+    if (typeof S.ytPlayer.stopVideo === 'function') {
+      S.ytPlayer.stopVideo();
+    } else if (typeof S.ytPlayer.pauseVideo === 'function') {
+      S.ytPlayer.pauseVideo();
+    }
+  } catch (_) {
+    return;
+  }
+  S.audioStopped = true;
+  updatePostPlankAudioControls(S.currentStep);
 }
 
 // =============================================================
@@ -587,6 +625,10 @@ async function saveNextSessionSchedule(nextSessionNum) {
 // =============================================================
 
 async function init() {
+  if ($('btn-stop-audio')) {
+    $('btn-stop-audio').onclick = stopStudyAudio;
+  }
+
   // Parse URL params
   var params = new URLSearchParams(window.location.search);
   S.email      = params.get('email');
@@ -740,6 +782,8 @@ function checkSession1ActivityComplete() {
 // =============================================================
 
 function setupAudioStep() {
+  S.audioStopped = false;
+  updatePostPlankAudioControls(S.currentStep);
   $('audio-track-label').textContent =
     'Assigned audio for this session: ' + S.track.label;
 
@@ -792,6 +836,7 @@ function setupPreTaskStep() {
   var camOption = $('camera-option');
   var camToggle = $('camera-toggle');
   var camStatus = $('camera-status');
+  var camPositioning = $('camera-positioning');
 
   // Hide camera option if getUserMedia not supported
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -802,6 +847,7 @@ function setupPreTaskStep() {
     if (!camToggle.checked) {
       S.photoEnabled = false;
       camStatus.textContent = '';
+      camPositioning.classList.add('hidden');
       if (S.cameraStream) {
         S.cameraStream.getTracks().forEach(function (t) { t.stop(); });
         S.cameraStream = null;
@@ -814,10 +860,12 @@ function setupPreTaskStep() {
       S.photoEnabled = true;
       $('camera-feed').classList.remove('hidden');
       camStatus.textContent = 'Camera ready. A thumbnail will be captured each second.';
+      camPositioning.classList.remove('hidden');
     } else {
       camToggle.checked = false;
       S.photoEnabled = false;
       camStatus.textContent = 'Camera permission denied — continuing without it.';
+      camPositioning.classList.add('hidden');
     }
   });
 
@@ -840,9 +888,21 @@ function checkPreTaskComplete() {
 
 function setupPlankStep() {
   $('timer-display').textContent = '00:00.0';
+  $('btn-plank-back').classList.remove('hidden');
+  S.plankBackEnabled = true;
+  if (S.plankBackTimer) {
+    clearTimeout(S.plankBackTimer);
+  }
+  S.plankBackTimer = setTimeout(function () {
+    S.plankBackEnabled = false;
+    $('btn-plank-back').classList.add('hidden');
+    S.plankBackTimer = null;
+  }, 5000);
 
   if (S.photoEnabled) {
     $('recording-indicator').classList.remove('hidden');
+  } else {
+    $('recording-indicator').classList.add('hidden');
   }
 
   // Start timer + capture
@@ -852,16 +912,51 @@ function setupPlankStep() {
     startCapture();
   }
 
-  $('btn-plank-stop').addEventListener('click', handlePlankStop, { once: true });
+  $('btn-plank-stop').onclick = handlePlankStop;
+  $('btn-plank-back').onclick = cancelPlankAndReturn;
+}
+
+function resetPlankBackState() {
+  S.plankBackEnabled = false;
+  if (S.plankBackTimer) {
+    clearTimeout(S.plankBackTimer);
+    S.plankBackTimer = null;
+  }
+  $('btn-plank-back').classList.add('hidden');
+}
+
+function cancelPlankAndReturn() {
+  if (!S.plankBackEnabled) return;
+  stopTimer();
+  releaseWakeLock();
+  resetPlankBackState();
+
+  if (S.captureInterval) {
+    clearInterval(S.captureInterval);
+    S.captureInterval = null;
+  }
+  S.frames = [];
+  S.elapsedMs = 0;
+  $('recording-indicator').classList.add('hidden');
+  $('timer-display').textContent = '00:00.0';
+
+  if (S.photoEnabled && S.cameraStream) {
+    $('camera-feed').classList.remove('hidden');
+    $('camera-status').textContent = 'Camera ready. A thumbnail will be captured each second.';
+  }
+
+  showStep('pre-task');
 }
 
 async function handlePlankStop() {
+  resetPlankBackState();
   var ms = stopTimer();
   releaseWakeLock();
 
   if (S.photoEnabled) {
     stopCapture();
   }
+  $('recording-indicator').classList.add('hidden');
 
   S.elapsedMs = ms;
   var totalSec = ms / 1000;
